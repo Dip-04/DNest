@@ -1,6 +1,81 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-export function AuthCard({title,subtitle,action,submitLabel,fields,hiddenFields,footer,message}:{title:string;subtitle:string;action:(formData:FormData)=>Promise<void>;submitLabel:string;fields:{name:string;label:string;type:string;autoComplete:string;placeholder?:string}[];hiddenFields?:Record<string,string>;footer?:React.ReactNode;message?:string}){
- return <main className="grid min-h-screen place-items-center p-5"><section className="w-full max-w-md"><Link href="/" className="display mb-8 block text-center text-2xl font-bold"><Heart className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]"/>DNest</Link><div className="surface card p-7 sm:p-9"><span className="eyebrow">Private by design</span><h1 className="display mt-3 text-4xl">{title}</h1><p className="muted mt-2 leading-6">{subtitle}</p>{message&&<p role="status" className="mt-5 rounded-2xl bg-[var(--rose-soft)] p-3 text-sm text-[var(--rose-deep)]">{message}</p>}<form action={action} className="mt-7 grid gap-4">{Object.entries(hiddenFields??{}).map(([name,value])=><input type="hidden" name={name} value={value} key={name}/>)}{fields.map(field=><label className="label" key={field.name}>{field.label}<input className="field" required name={field.name} type={field.type} autoComplete={field.autoComplete} placeholder={field.placeholder}/></label>)}<button className="btn btn-primary mt-2" type="submit">{submitLabel}</button></form>{footer&&<div className="muted mt-6 text-center text-sm">{footer}</div>}</div></section></main>
+export function AuthCard({
+  title,
+  subtitle,
+  action,
+  submitLabel,
+  fields,
+  hiddenFields,
+  footer,
+  message,
+}: {
+  title: string;
+  subtitle: string;
+  action: (formData: FormData) => Promise<void>;
+  submitLabel: string;
+  fields: {
+    name: string;
+    label: string;
+    type: string;
+    autoComplete: string;
+    placeholder?: string;
+  }[];
+  hiddenFields?: Record<string, string>;
+  footer?: React.ReactNode;
+  message?: string;
+}) {
+  return (
+    <main className="relative grid min-h-screen place-items-center p-5">
+      <ThemeToggle className="absolute right-5 top-5" />
+      <section className="w-full max-w-md">
+        <Link
+          href="/"
+          className="display mb-8 block text-center text-2xl font-bold"
+        >
+          <Heart className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]" />
+          DNest
+        </Link>
+        <div className="surface card p-7 sm:p-9">
+          <span className="eyebrow">Private by design</span>
+          <h1 className="display mt-3 text-4xl">{title}</h1>
+          <p className="muted mt-2 leading-6">{subtitle}</p>
+          {message && (
+            <p
+              role="status"
+              className="mt-5 rounded-2xl bg-[var(--rose-soft)] p-3 text-sm text-[var(--rose-deep)]"
+            >
+              {message}
+            </p>
+          )}
+          <form action={action} className="mt-7 grid gap-4">
+            {Object.entries(hiddenFields ?? {}).map(([name, value]) => (
+              <input type="hidden" name={name} value={value} key={name} />
+            ))}
+            {fields.map((field) => (
+              <label className="label" key={field.name}>
+                {field.label}
+                <input
+                  className="field"
+                  required
+                  name={field.name}
+                  type={field.type}
+                  autoComplete={field.autoComplete}
+                  placeholder={field.placeholder}
+                />
+              </label>
+            ))}
+            <button className="btn btn-primary mt-2" type="submit">
+              {submitLabel}
+            </button>
+          </form>
+          {footer && (
+            <div className="muted mt-6 text-center text-sm">{footer}</div>
+          )}
+        </div>
+      </section>
+    </main>
+  );
 }

@@ -1,7 +1,103 @@
 import Link from "next/link";
-import { BookHeart, Heart, Home, LogOut, Map, Plane, Settings, Sparkles, UserRound } from "lucide-react";
+import {
+  BookHeart,
+  Heart,
+  Home,
+  LogOut,
+  Map,
+  Plane,
+  Settings,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
 import { signOut } from "@/features/auth/actions";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { ThemeToggle } from "@/components/theme-toggle";
 
-const nav=[{href:"/home",label:"Home",icon:Home},{href:"/moments",label:"Moments",icon:BookHeart},{href:"/together",label:"Together",icon:Sparkles},{href:"/plans",label:"Plans",icon:Plane},{href:"/us",label:"Us",icon:UserRound}];
-export function AppShell({children,nestName}:{children:React.ReactNode;nestName:string}){return <div className="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]"><ServiceWorkerRegistration/><aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-[var(--border)] bg-[var(--surface)] p-5 lg:flex"><Link href="/home" className="display text-2xl font-bold"><Heart className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]"/>DNest</Link><p className="muted mt-2 truncate text-xs">{nestName}</p><nav aria-label="Nest navigation" className="mt-10 grid gap-1">{nav.map(({href,label,icon:Icon})=><Link href={href} key={href} className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold hover:bg-[var(--rose-soft)]"><Icon className="size-5 text-[var(--rose-deep)]"/>{label}</Link>)}</nav><div className="mt-auto grid gap-1"><Link href="/notifications" className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm"><Map className="size-4"/>Notifications</Link><Link href="/settings" className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm"><Settings className="size-4"/>Settings</Link><form action={signOut}><button className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm" type="submit"><LogOut className="size-4"/>Sign out</button></form></div></aside><main className="mx-auto w-full max-w-7xl px-4 pt-6 pb-28 sm:px-7 lg:col-start-2 lg:px-10 lg:py-9">{children}</main><nav aria-label="Mobile navigation" className="fixed inset-x-3 bottom-3 z-30 flex justify-around rounded-[1.4rem] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-2xl lg:hidden">{nav.map(({href,label,icon:Icon})=><Link href={href} key={href} className="flex min-w-14 flex-col items-center gap-1 rounded-xl px-2 py-1 text-[.65rem] font-bold"><Icon className="size-5 text-[var(--rose-deep)]"/>{label}</Link>)}</nav></div>}
+const nav = [
+  { href: "/home", label: "Home", icon: Home },
+  { href: "/moments", label: "Moments", icon: BookHeart },
+  { href: "/together", label: "Together", icon: Sparkles },
+  { href: "/plans", label: "Plans", icon: Plane },
+  { href: "/us", label: "Us", icon: UserRound },
+];
+export function AppShell({
+  children,
+  nestName,
+}: {
+  children: React.ReactNode;
+  nestName: string;
+}) {
+  return (
+    <div className="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]">
+      <ServiceWorkerRegistration />
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-[var(--border)] bg-[var(--surface)] p-5 lg:flex">
+        <Link href="/home" className="display text-2xl font-bold">
+          <Heart className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]" />
+          DNest
+        </Link>
+        <p className="muted mt-2 truncate text-xs">{nestName}</p>
+        <nav aria-label="Nest navigation" className="mt-10 grid gap-1">
+          {nav.map(({ href, label, icon: Icon }) => (
+            <Link
+              href={href}
+              key={href}
+              className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold hover:bg-[var(--rose-soft)]"
+            >
+              <Icon className="size-5 text-[var(--rose-deep)]" />
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <div className="mt-auto grid gap-1">
+          <div className="flex items-center gap-3 px-3 py-2 text-sm">
+            <ThemeToggle />
+            <span>Appearance</span>
+          </div>
+          <Link
+            href="/notifications"
+            className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm"
+          >
+            <Map className="size-4" />
+            Notifications
+          </Link>
+          <Link
+            href="/settings"
+            className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm"
+          >
+            <Settings className="size-4" />
+            Settings
+          </Link>
+          <form action={signOut}>
+            <button
+              className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm"
+              type="submit"
+            >
+              <LogOut className="size-4" />
+              Sign out
+            </button>
+          </form>
+        </div>
+      </aside>
+      <ThemeToggle className="fixed right-4 bottom-24 z-30 lg:hidden" />
+      <main className="mx-auto w-full max-w-7xl px-4 pt-6 pb-28 sm:px-7 lg:col-start-2 lg:px-10 lg:py-9">
+        {children}
+      </main>
+      <nav
+        aria-label="Mobile navigation"
+        className="fixed inset-x-3 bottom-3 z-30 flex justify-around rounded-[1.4rem] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-2xl lg:hidden"
+      >
+        {nav.map(({ href, label, icon: Icon }) => (
+          <Link
+            href={href}
+            key={href}
+            className="flex min-w-14 flex-col items-center gap-1 rounded-xl px-2 py-1 text-[.65rem] font-bold"
+          >
+            <Icon className="size-5 text-[var(--rose-deep)]" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+    </div>
+  );
+}
