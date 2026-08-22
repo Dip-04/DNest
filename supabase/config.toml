@@ -1,0 +1,4 @@
+project_id = "dnest"
+
+[functions.deliver-scheduled-notes]
+verify_jwt = false

@@ -1,0 +1,2 @@
+import {AuthCard} from "@/components/auth-card";import {resetPassword} from "@/features/auth/actions";
+export default async function Page({searchParams}:{searchParams:Promise<{message?:string}>}){const {message}=await searchParams;return <AuthCard title="Choose a new password" subtitle="Use a unique password you don’t use anywhere else." action={resetPassword} submitLabel="Update password" message={message} fields={[{name:"password",label:"New password",type:"password",autoComplete:"new-password"}]}/>}

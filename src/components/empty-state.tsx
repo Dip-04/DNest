@@ -1,0 +1,2 @@
+import type {LucideIcon} from "lucide-react";import Link from "next/link";
+export function EmptyState({icon:Icon,title,text,href,label}:{icon:LucideIcon;title:string;text:string;href?:string;label?:string}){return <div className="rounded-[1.4rem] border border-dashed border-[var(--border)] p-8 text-center"><Icon className="mx-auto size-7 text-[var(--rose)]"/><h3 className="display mt-4 text-2xl">{title}</h3><p className="muted mx-auto mt-2 max-w-md">{text}</p>{href&&label&&<Link className="btn btn-secondary mt-5" href={href}>{label}</Link>}</div>}
