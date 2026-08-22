@@ -233,6 +233,17 @@ a {
   background: var(--rose-soft);
   box-shadow: 0 12px 28px color-mix(in srgb, var(--rose) 20%, transparent);
 }
+.theme-icon {
+  display: grid;
+  place-items: center;
+  animation: theme-icon-in 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.toast-message {
+  animation: toast-life 5.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.toast-progress {
+  animation: toast-progress 5.2s linear both;
+}
 .card {
   border-radius: 1.75rem;
   padding: 1.5rem;
@@ -1268,6 +1279,39 @@ a {
   from {
     opacity: 0;
     transform: translateY(14px);
+  }
+}
+@keyframes theme-icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-35deg) scale(0.65);
+  }
+  70% {
+    transform: rotate(5deg) scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes toast-life {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.96);
+  }
+  6%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+}
+@keyframes toast-progress {
+  to {
+    transform: scaleX(0);
   }
 }
 @keyframes scroll-reveal {

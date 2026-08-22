@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { MoonStar, Sparkles, SunMedium } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
@@ -49,23 +48,15 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       aria-label={label}
       title={label}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={theme ?? "loading"}
-          initial={{ opacity: 0, rotate: -35, scale: 0.65 }}
-          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-          exit={{ opacity: 0, rotate: 35, scale: 0.65 }}
-          transition={{ type: "spring", stiffness: 420, damping: 24 }}
-        >
-          {theme === null ? (
-            <Sparkles aria-hidden className="size-5" />
-          ) : isDark ? (
-            <SunMedium aria-hidden className="size-5" />
-          ) : (
-            <MoonStar aria-hidden className="size-5" />
-          )}
-        </motion.span>
-      </AnimatePresence>
+      <span className="theme-icon" key={theme ?? "loading"}>
+        {theme === null ? (
+          <Sparkles aria-hidden className="size-5" />
+        ) : isDark ? (
+          <SunMedium aria-hidden className="size-5" />
+        ) : (
+          <MoonStar aria-hidden className="size-5" />
+        )}
+      </span>
       <Sparkles
         aria-hidden
         className="absolute -right-0.5 -top-0.5 size-3 text-[var(--rose)]"
