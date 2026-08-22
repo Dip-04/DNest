@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/route-access";
+import { getSiteUrl } from "@/lib/seo";
 import {
   signInSchema,
   signUpSchema,
@@ -10,6 +11,13 @@ import {
 } from "@/validations/auth";
 
 type ToastKind = "success" | "error";
+
+function authCallbackUrl(next?: string): string {
+  const callback = new URL("/auth/callback", getSiteUrl());
+  if (next) callback.searchParams.set("next", next);
+  return callback.toString();
+}
+
 function withToast(path: string, kind: ToastKind, message: string): string {
   const url = new URL(path, "https://dnest.invalid");
   url.searchParams.set(kind, message.slice(0, 280));
@@ -57,13 +65,12 @@ export async function signUp(formData: FormData) {
     );
 
   const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
       data: { display_name: parsed.data.name },
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: authCallbackUrl(),
     },
   });
   if (error)
@@ -99,9 +106,8 @@ export async function forgotPassword(formData: FormData) {
       withToast("/forgot-password", "error", "Enter a valid email address."),
     );
   const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   await supabase.auth.resetPasswordForEmail(parsed.data, {
-    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+    redirectTo: authCallbackUrl("/reset-password"),
   });
   redirect(
     withToast(

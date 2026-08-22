@@ -108,7 +108,7 @@ Authenticated two-user and direct-RLS tests require a disposable Supabase projec
 1. Create a Supabase project, configure the canonical site URL and Auth redirects, then run `supabase db push`.
 2. Deploy the Edge Function and configure cron and server-only secrets.
 3. Import the repository into Vercel and add every required `.env.example` value to the correct environment.
-4. Set `NEXT_PUBLIC_APP_URL` to the canonical custom HTTPS domain and add `/auth/callback` to Supabase Auth redirects.
+4. Set `NEXT_PUBLIC_APP_URL` to the canonical custom HTTPS origin without a path. In Supabase Auth URL Configuration, set the Site URL to that same origin and add both `https://YOUR_DOMAIN/auth/callback` and `http://localhost:3000/auth/callback` to Redirect URLs. Supabase falls back to its Site URL when a requested redirect is not allow-listed, so leaving the Site URL on localhost causes production password-reset emails to open localhost.
 5. Deploy, inspect `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`, `/favicon.ico`, and `/opengraph-image`, then run the production smoke suite.
 
 ## Security model
