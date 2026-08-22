@@ -1,2 +1,3 @@
-import Link from "next/link";import {Heart} from "lucide-react";
+import type {Metadata} from "next";import Link from "next/link";import {Heart} from "lucide-react";import {privateMetadata} from "@/lib/seo";
+export const metadata:Metadata=privateMetadata("Private invitation");
 export default async function Page({params}:{params:Promise<{token:string}>}){const {token}=await params;return <main className="grid min-h-screen place-items-center p-5"><section className="surface card max-w-md p-8 text-center"><Heart className="mx-auto size-8 fill-[var(--rose)] text-[var(--rose)]"/><span className="eyebrow mt-5 block">A private invitation</span><h1 className="display mt-3 text-4xl">Someone made a place for you.</h1><p className="muted mt-3">Sign in or create your account, then accept this one-use invitation.</p><Link className="btn btn-primary mt-7" href={`/sign-in?next=${encodeURIComponent(`/onboarding?token=${token}`)}`}>Continue securely</Link></section></main>}

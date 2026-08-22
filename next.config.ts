@@ -17,7 +17,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: { remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }] },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    const noIndexHeaders = { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet, noimageindex" };
+    const privatePrefixes = ["home", "moments", "together", "plans", "us", "notes", "questions", "notifications", "settings", "onboarding", "invite", "sign-in", "sign-up", "forgot-password", "reset-password", "offline", "api", "auth"];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      ...privatePrefixes.map(prefix => ({ source: `/${prefix}/:path*`, headers: [noIndexHeaders] })),
+    ];
   },
 };
 

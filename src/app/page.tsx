@@ -1,32 +1,31 @@
 import Link from "next/link";
-import { ArrowRight, BookHeart, CalendarHeart, Heart, LockKeyhole, MapPinned, Sparkles } from "lucide-react";
+import { ArrowRight, BookHeart, CalendarHeart, Heart, ListChecks, LockKeyhole, MapPinned, MessageCircleHeart, Sparkles } from "lucide-react";
+import { MarketingFooter, MarketingHeader } from "@/components/marketing-shell";
+import { JsonLd } from "@/components/seo/json-ld";
+import { getSiteUrl, siteDescription, siteName } from "@/lib/seo";
 
-const features = [
-  { icon: BookHeart, title: "Keep the story of us", text: "Save photos and the stories around them in a timeline that becomes more precious with time." },
-  { icon: CalendarHeart, title: "Make distance feel smaller", text: "Count down to the next hello, plan the visit, and keep important days close." },
-  { icon: Sparkles, title: "Small rituals, real connection", text: "A daily question, a thoughtful note, or one quiet tap that says you’re on my mind." },
+const featureCards = [
+  { icon: BookHeart, title: "Moments and Memory Book", text: "Save photos with the story around them, then revisit everything as an editorial memory book or a chronological relationship timeline." },
+  { icon: MessageCircleHeart, title: "Love Notes that last", text: "Leave an intentional note now or schedule one for the right moment in your partner’s time zone. DNest is not another chat inbox." },
+  { icon: CalendarHeart, title: "The next hello", text: "Keep a shared meetup countdown, travel details, and a gentle checklist so anticipation has a place of its own." },
+  { icon: Sparkles, title: "Virtual date ideas", text: "Find small things to do together—from a fifteen-minute ritual to a full date night—without competitive streaks or scores." },
+  { icon: ListChecks, title: "A couple bucket list", text: "Collect someday dreams, move them from planning to done, and turn a completed wish into a memory without rewriting it." },
+  { icon: MapPinned, title: "Your story across places", text: "See meaningful locations on a private memory map. Exact coordinates and photos remain protected inside your shared Nest." },
 ];
 
 export default function LandingPage() {
-  return <main className="min-h-screen overflow-hidden">
-    <nav aria-label="Main navigation" className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6">
-      <Link href="/" className="display text-2xl font-bold"><Heart className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]" />DNest</Link>
-      <div className="flex gap-2"><Link className="btn btn-secondary" href="/sign-in">Sign in</Link><Link className="btn btn-primary hidden sm:inline-flex" href="/sign-up">Create your Nest</Link></div>
-    </nav>
-    <section className="mx-auto grid min-h-[78vh] max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-[1.05fr_.95fr]">
-      <div>
-        <span className="eyebrow">A private world for two</span>
-        <h1 className="display mt-5 max-w-3xl text-6xl leading-[.96] font-semibold sm:text-7xl">Our little place,<br/><em className="text-[var(--rose-deep)]">no matter the distance.</em></h1>
-        <p className="muted mt-7 max-w-xl text-lg leading-8">DNest keeps your memories, plans, love notes, and small daily rituals together—far from the noise of a feed or chat thread.</p>
-        <div className="mt-9 flex flex-wrap gap-3"><Link className="btn btn-primary" href="/sign-up">Start our Nest <ArrowRight className="size-4" /></Link><a className="btn btn-secondary" href="#inside">See inside</a></div>
-        <p className="muted mt-5 flex items-center gap-2 text-sm"><LockKeyhole className="size-4" />Exactly two members. Private by design.</p>
-      </div>
-      <div className="relative mx-auto w-full max-w-lg" aria-label="DNest memory preview">
-        <div className="surface card rotate-2 p-4"><div className="aspect-[4/3] rounded-[1.25rem] bg-[linear-gradient(145deg,#6f7889,#d5a795_55%,#f5d8b7)] p-6 text-white"><div className="flex h-full flex-col justify-between"><span className="chip w-fit !bg-white/20 !text-white">August 14 · Mumbai</span><div><p className="display text-4xl">The sunset we nearly missed</p><p className="mt-2 text-sm text-white/85">We stayed until the sky turned peach and forgot what time it was.</p></div></div></div></div>
-        <div className="surface card absolute -bottom-12 -left-5 -rotate-3 sm:-left-12"><span className="text-2xl">✈️</span><p className="display mt-3 text-2xl">17 days</p><p className="muted text-sm">until you’re together</p></div>
-      </div>
+  const siteUrl = getSiteUrl().toString();
+  const structuredData = [
+    { "@context": "https://schema.org", "@type": "WebSite", name: siteName, url: siteUrl, description: siteDescription },
+    { "@context": "https://schema.org", "@type": "SoftwareApplication", name: siteName, url: siteUrl, description: siteDescription, applicationCategory: "LifestyleApplication", operatingSystem: "Web", browserRequirements: "Requires a modern web browser with JavaScript enabled" },
+  ];
+  return <><JsonLd data={structuredData}/><MarketingHeader/><main className="overflow-hidden">
+    <section className="mx-auto grid min-h-[76vh] max-w-6xl items-center gap-14 px-5 py-16 lg:grid-cols-[1.05fr_.95fr]">
+      <div><span className="eyebrow">A private relationship app for two</span><h1 className="display mt-5 max-w-3xl text-6xl leading-[.96] font-semibold sm:text-7xl">Your relationship deserves <em className="text-[var(--rose-deep)]">a place of its own.</em></h1><p className="mt-7 max-w-xl text-xl leading-8">DNest is your private couple space for shared memories, love notes, meetup plans, and the story you are building across any distance.</p><p className="muted mt-3 max-w-xl text-lg">Our little place, no matter the distance.</p><div className="mt-9 flex flex-wrap gap-3"><Link className="btn btn-primary" href="/sign-up">Create your Nest <ArrowRight className="size-4"/></Link><Link className="btn btn-secondary" href="/features">Explore features</Link></div><p className="muted mt-5 flex items-center gap-2 text-sm"><LockKeyhole className="size-4"/>Exactly two members. No feeds, followers, or public profiles.</p></div>
+      <div className="relative mx-auto w-full max-w-lg" aria-label="Illustration of a DNest relationship memory and meetup countdown"><div className="surface card rotate-2 p-4"><div className="aspect-[4/3] rounded-[1.25rem] bg-[linear-gradient(145deg,#6f7889,#d5a795_55%,#f5d8b7)] p-6 text-white"><div className="flex h-full flex-col justify-between"><span className="chip w-fit !bg-white/20 !text-white">August 14 · Our memory</span><div><p className="display text-4xl">The sunset we nearly missed</p><p className="mt-2 text-sm text-white/85">We stayed until the sky turned peach and forgot what time it was.</p></div></div></div></div><div className="surface card absolute -bottom-12 -left-5 -rotate-3 sm:-left-12"><CalendarHeart className="size-6 text-[var(--rose)]"/><p className="display mt-3 text-3xl">17 days</p><p className="muted text-sm">until you’re together</p></div></div>
     </section>
-    <section id="inside" className="mx-auto max-w-6xl px-5 py-28"><span className="eyebrow">Everything around talking</span><h2 className="display mt-3 max-w-2xl text-4xl sm:text-5xl">A home for what ordinary messaging leaves behind.</h2><div className="mt-10 grid gap-5 md:grid-cols-3">{features.map(({icon: Icon,title,text})=><article className="surface card" key={title}><Icon className="size-6 text-[var(--rose)]"/><h3 className="display mt-7 text-2xl">{title}</h3><p className="muted mt-3 leading-7">{text}</p></article>)}</div></section>
-    <section className="mx-auto mb-20 max-w-6xl px-5"><div className="surface card grid gap-8 bg-[var(--surface)] p-8 sm:p-12 md:grid-cols-[1fr_auto] md:items-end"><div><MapPinned className="size-7 text-[var(--plum)]"/><h2 className="display mt-5 text-4xl">This place belongs only to you two.</h2><p className="muted mt-3 max-w-2xl">No followers, no searchable profiles, no public moments. Every shared thing stays inside your Nest.</p></div><Link className="btn btn-primary" href="/sign-up">Create your private space</Link></div></section>
-  </main>;
+    <section id="features" className="mx-auto max-w-6xl px-5 py-28"><span className="eyebrow">Everything around talking</span><h2 className="display mt-3 max-w-3xl text-4xl sm:text-5xl">A private scrapbook and relationship companion for long-distance couples.</h2><p className="muted mt-5 max-w-3xl text-lg leading-8">Messaging helps you talk today. DNest keeps the memories, plans, rituals, and milestones you will want to return to years from now.</p><div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{featureCards.map(({ icon: Icon, title, text }) => <article className="surface card" key={title}><Icon aria-hidden className="size-6 text-[var(--rose)]"/><h3 className="display mt-7 text-2xl">{title}</h3><p className="muted mt-3 leading-7">{text}</p></article>)}</div></section>
+    <section className="mx-auto max-w-6xl px-5 pb-28"><div className="surface card grid gap-9 p-8 sm:p-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center"><div><Heart aria-hidden className="size-7 fill-[var(--rose-soft)] text-[var(--rose)]"/><span className="eyebrow mt-5 block">A simple daily rhythm</span><h2 className="display mt-3 text-4xl">Open it. Feel close. Add one meaningful thing.</h2></div><div className="grid gap-4 sm:grid-cols-2"><article className="rounded-3xl bg-[var(--rose-soft)] p-5"><h3 className="font-bold">Remember together</h3><p className="muted mt-2 text-sm leading-6">On This Day resurfaces past Moments without exposing them to public pages or search engines.</p></article><article className="rounded-3xl bg-[color-mix(in_srgb,var(--plum)_13%,var(--surface))] p-5"><h3 className="font-bold">Discover together</h3><p className="muted mt-2 text-sm leading-6">Daily questions keep each answer hidden until both partners have replied.</p></article></div></div></section>
+    <section className="mx-auto mb-20 max-w-6xl px-5"><div className="surface card grid gap-8 bg-[var(--surface)] p-8 sm:p-12 md:grid-cols-[1fr_auto] md:items-end"><div><LockKeyhole className="size-7 text-[var(--plum)]"/><h2 className="display mt-5 text-4xl">This place belongs only to you two.</h2><p className="muted mt-3 max-w-2xl leading-7">DNest has no searchable couples, public Moment pages, or social feed. Shared rows and private media are protected by Nest membership—not by a hidden button in the browser.</p><Link href="/privacy" className="mt-4 inline-block font-bold text-[var(--rose-deep)]">Read how privacy works →</Link></div><Link className="btn btn-primary" href="/sign-up">Create your private space</Link></div></section>
+  </main><MarketingFooter/></>;
 }
