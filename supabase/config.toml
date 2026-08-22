@@ -1,4 +1,18 @@
 project_id = "dnest"
 
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = []
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+max_frequency = "1m"
+otp_length = 8
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
 [functions.deliver-scheduled-notes]
 verify_jwt = false
