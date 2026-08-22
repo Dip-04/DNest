@@ -183,6 +183,7 @@ a {
   border: 1px solid transparent;
   padding: 0.7rem 1.15rem;
   font-weight: 800;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     transform 0.2s,
@@ -624,6 +625,23 @@ a {
 }
 .marketing-footer {
   background: color-mix(in srgb, var(--surface-muted) 70%, transparent);
+}
+.marketing-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 44px;
+}
+.marketing-actions form {
+  display: flex;
+}
+.header-actions-placeholder {
+  display: block;
+  width: 5rem;
+  height: 44px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-muted) 76%, transparent);
+  animation: nest-breathe 1.8s ease-in-out infinite;
 }
 
 .app-sidebar {
@@ -1418,6 +1436,24 @@ a {
   }
 }
 @media (max-width: 500px) {
+  .marketing-nav {
+    gap: 0.65rem;
+  }
+  .marketing-nav .brand-word {
+    display: none;
+  }
+  .marketing-actions {
+    gap: 0.35rem;
+  }
+  .marketing-actions .btn {
+    padding: 0.62rem 0.75rem;
+  }
+  .marketing-actions .btn span {
+    display: none;
+  }
+  .header-actions-placeholder {
+    width: 3rem;
+  }
   .mood-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

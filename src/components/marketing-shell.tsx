@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandMark } from "@/components/brand-mark";
+import { MarketingActions } from "@/components/marketing-actions";
 
 const links = [
   { href: "/features", label: "Features" },
@@ -21,7 +21,7 @@ export function MarketingHeader() {
           className="display flex shrink-0 items-center gap-2 text-2xl font-bold"
         >
           <BrandMark className="size-9 text-[var(--rose-deep)]" />
-          DNest
+          <span className="brand-word">DNest</span>
         </Link>
         <div className="hidden items-center gap-5 text-sm font-bold md:flex">
           {links.map((link) => (
@@ -34,18 +34,7 @@ export function MarketingHeader() {
             </Link>
           ))}
         </div>
-        <div className="flex gap-2">
-          <ThemeToggle />
-          <Link className="btn btn-secondary" href="/sign-in">
-            Sign in
-          </Link>
-          <Link
-            className="btn btn-primary hidden sm:inline-flex"
-            href="/sign-up"
-          >
-            Create your Nest
-          </Link>
-        </div>
+        <MarketingActions />
       </nav>
     </header>
   );
