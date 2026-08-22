@@ -1,6 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
+import { useState } from "react";
 
 const DnestHeroScene = dynamic(() => import("./dnest-hero-scene"), {
   ssr: false,
@@ -15,13 +17,25 @@ const DnestHeroScene = dynamic(() => import("./dnest-hero-scene"), {
 });
 
 export function HeroVisual() {
+  const [interactive, setInteractive] = useState(false);
   return (
     <div
-      className="hero-visual"
+      className={`hero-visual ${interactive ? "is-interactive" : ""}`}
       aria-label="A handcrafted nest holding a warm private room and floating memories"
+      onPointerEnter={() => setInteractive(true)}
     >
       <div className="hero-orbit" aria-hidden />
-      <DnestHeroScene />
+      <div className="nest-fallback" aria-hidden>
+        <Image
+          src="/images/dnest-hero-fallback.webp"
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 767px) 100vw, 54vw"
+          className="object-cover"
+        />
+      </div>
+      {interactive && <DnestHeroScene />}
       <div className="memory-slip memory-slip-left" aria-hidden>
         <span>08 · 14</span>
         <strong>our little world</strong>
