@@ -6,9 +6,20 @@ const publicSchema = z.object({
 });
 
 export function getPublicEnv() {
-  const parsed = publicSchema.safeParse({ NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY });
-  if (!parsed.success) throw new Error("Supabase is not configured. Copy .env.example to .env.local and add the project URL and anon key.");
+  const parsed = publicSchema.safeParse({
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  });
+  if (!parsed.success)
+    throw new Error(
+      "Supabase is not configured. Copy .env.example to .env.local and add the project URL and anon key.",
+    );
   return parsed.data;
 }
 
-export function isSupabaseConfigured() { return publicSchema.safeParse({ NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY }).success; }
+export function isSupabaseConfigured() {
+  return publicSchema.safeParse({
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  }).success;
+}

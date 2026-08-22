@@ -21,7 +21,9 @@ describe("normalizeNest", () => {
       nest_members: [{ user_id: "user-1", profiles: [profile] }],
     };
 
-    expect(normalizeNest(raw).members).toEqual([{ user_id: "user-1", profiles: profile }]);
+    expect(normalizeNest(raw).members).toEqual([
+      { user_id: "user-1", profiles: profile },
+    ]);
   });
 
   it("handles a missing nested relation without crashing the home page", () => {

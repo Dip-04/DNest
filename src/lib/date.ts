@@ -1,6 +1,65 @@
-const DAY_MS=86_400_000;
-export function daysTogether(start:string|null,now=new Date()){if(!start)return null;const startDate=new Date(`${start}T00:00:00Z`);if(Number.isNaN(startDate.getTime())||startDate>now)return 0;return Math.floor((Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate())-startDate.getTime())/DAY_MS)+1}
-export function countdown(target:string,now=new Date()){const diff=Math.max(0,new Date(target).getTime()-now.getTime());return {totalMs:diff,days:Math.floor(diff/DAY_MS),hours:Math.floor(diff/3_600_000)%24,minutes:Math.floor(diff/60_000)%60,isPast:new Date(target).getTime()<=now.getTime()}}
-export function yearsAgoOnThisDay(iso:string,now=new Date()){const date=new Date(iso);if(date.getUTCMonth()!==now.getUTCMonth()||date.getUTCDate()!==now.getUTCDate())return null;const years=now.getUTCFullYear()-date.getUTCFullYear();return years>0?years:null}
-export function distanceKm(a:{latitude:number|null;longitude:number|null},b:{latitude:number|null;longitude:number|null}){if(a.latitude==null||a.longitude==null||b.latitude==null||b.longitude==null)return null;const rad=(n:number)=>n*Math.PI/180;const dLat=rad(b.latitude-a.latitude),dLon=rad(b.longitude-a.longitude);const v=Math.sin(dLat/2)**2+Math.cos(rad(a.latitude))*Math.cos(rad(b.latitude))*Math.sin(dLon/2)**2;return Math.round(6371*2*Math.atan2(Math.sqrt(v),Math.sqrt(1-v)))}
-export function formatLocalTime(timezone:string,now=new Date()){try{return new Intl.DateTimeFormat("en",{timeZone:timezone,hour:"numeric",minute:"2-digit"}).format(now)}catch{return "Time zone not set"}}
+const DAY_MS = 86_400_000;
+export function daysTogether(start: string | null, now = new Date()) {
+  if (!start) return null;
+  const startDate = new Date(`${start}T00:00:00Z`);
+  if (Number.isNaN(startDate.getTime()) || startDate > now) return 0;
+  return (
+    Math.floor(
+      (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
+        startDate.getTime()) /
+        DAY_MS,
+    ) + 1
+  );
+}
+export function countdown(target: string, now = new Date()) {
+  const diff = Math.max(0, new Date(target).getTime() - now.getTime());
+  return {
+    totalMs: diff,
+    days: Math.floor(diff / DAY_MS),
+    hours: Math.floor(diff / 3_600_000) % 24,
+    minutes: Math.floor(diff / 60_000) % 60,
+    isPast: new Date(target).getTime() <= now.getTime(),
+  };
+}
+export function yearsAgoOnThisDay(iso: string, now = new Date()) {
+  const date = new Date(iso);
+  if (
+    date.getUTCMonth() !== now.getUTCMonth() ||
+    date.getUTCDate() !== now.getUTCDate()
+  )
+    return null;
+  const years = now.getUTCFullYear() - date.getUTCFullYear();
+  return years > 0 ? years : null;
+}
+export function distanceKm(
+  a: { latitude: number | null; longitude: number | null },
+  b: { latitude: number | null; longitude: number | null },
+) {
+  if (
+    a.latitude == null ||
+    a.longitude == null ||
+    b.latitude == null ||
+    b.longitude == null
+  )
+    return null;
+  const rad = (n: number) => (n * Math.PI) / 180;
+  const dLat = rad(b.latitude - a.latitude),
+    dLon = rad(b.longitude - a.longitude);
+  const v =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.latitude)) *
+      Math.cos(rad(b.latitude)) *
+      Math.sin(dLon / 2) ** 2;
+  return Math.round(6371 * 2 * Math.atan2(Math.sqrt(v), Math.sqrt(1 - v)));
+}
+export function formatLocalTime(timezone: string, now = new Date()) {
+  try {
+    return new Intl.DateTimeFormat("en", {
+      timeZone: timezone,
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(now);
+  } catch {
+    return "Time zone not set";
+  }
+}

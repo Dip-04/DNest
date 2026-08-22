@@ -73,7 +73,10 @@ export default async function Page({
       </nav>
       <section className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {displayed?.map((idea) => (
-          <article className="date-idea-card surface card flex flex-col" key={idea.id}>
+          <article
+            className="date-idea-card surface card flex flex-col"
+            key={idea.id}
+          >
             <div className="flex justify-between">
               <span className="chip">
                 <Clock3 className="size-3" />

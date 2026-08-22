@@ -1,3 +1,94 @@
-import type {Metadata} from "next";import {Heart,Link2,Plus} from "lucide-react";import {acceptInvite,createNest} from "@/features/shared/actions";import {getNestContext} from "@/lib/nest";import {redirect} from "next/navigation";import {privateMetadata} from "@/lib/seo";
-export const metadata:Metadata=privateMetadata("Create or join your Nest");
-export default async function Page({searchParams}:{searchParams:Promise<{message?:string;token?:string}>}){if(await getNestContext())redirect("/home");const q=await searchParams;return <main className="grid min-h-screen place-items-center p-5"><div className="w-full max-w-4xl"><div className="text-center"><Heart className="mx-auto size-7 fill-[var(--rose)] text-[var(--rose)]"/><span className="eyebrow mt-4 block">One private place · two people</span><h1 className="display mt-3 text-5xl">How does your story begin here?</h1><p className="muted mx-auto mt-3 max-w-xl">Create your Nest and invite your partner, or join the place they already made for you.</p>{q.message&&<p role="alert" className="mx-auto mt-4 max-w-md rounded-2xl bg-[var(--rose-soft)] p-3 text-sm">{q.message}</p>}</div><div className="mt-10 grid gap-5 md:grid-cols-2"><section className="surface card p-7"><Plus className="size-6 text-[var(--rose)]"/><h2 className="display mt-5 text-3xl">Create our Nest</h2><form action={createNest} className="mt-6 grid gap-4"><label className="label">A name for your place<input className="field" name="name" defaultValue="Our Nest" required/></label><label className="label">When your story began <span className="font-normal">(optional)</span><input className="field" name="relationship_start" type="date"/></label><button className="btn btn-primary" type="submit">Create our private place</button></form></section><section className="surface card p-7"><Link2 className="size-6 text-[var(--plum)]"/><h2 className="display mt-5 text-3xl">Join my partner</h2><form action={acceptInvite} className="mt-6 grid gap-4"><label className="label">Private invitation code<input className="field uppercase" name="token" defaultValue={q.token??""} placeholder="A1B2C3D4E5F6" required/></label><p className="muted text-xs">Codes expire after seven days and stop working as soon as the second partner joins.</p><button className="btn btn-secondary" type="submit">Join our Nest</button></form></section></div></div></main>}
+import type { Metadata } from "next";
+import { Heart, Link2, Plus } from "lucide-react";
+import { acceptInvite, createNest } from "@/features/shared/actions";
+import { getNestContext } from "@/lib/nest";
+import { redirect } from "next/navigation";
+import { privateMetadata } from "@/lib/seo";
+export const metadata: Metadata = privateMetadata("Create or join your Nest");
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string; token?: string }>;
+}) {
+  if (await getNestContext()) redirect("/home");
+  const q = await searchParams;
+  return (
+    <main className="grid min-h-screen place-items-center p-5">
+      <div className="w-full max-w-4xl">
+        <div className="text-center">
+          <Heart className="mx-auto size-7 fill-[var(--rose)] text-[var(--rose)]" />
+          <span className="eyebrow mt-4 block">
+            One private place · two people
+          </span>
+          <h1 className="display mt-3 text-5xl">
+            How does your story begin here?
+          </h1>
+          <p className="muted mx-auto mt-3 max-w-xl">
+            Create your Nest and invite your partner, or join the place they
+            already made for you.
+          </p>
+          {q.message && (
+            <p
+              role="alert"
+              className="mx-auto mt-4 max-w-md rounded-2xl bg-[var(--rose-soft)] p-3 text-sm"
+            >
+              {q.message}
+            </p>
+          )}
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <section className="surface card p-7">
+            <Plus className="size-6 text-[var(--rose)]" />
+            <h2 className="display mt-5 text-3xl">Create our Nest</h2>
+            <form action={createNest} className="mt-6 grid gap-4">
+              <label className="label">
+                A name for your place
+                <input
+                  className="field"
+                  name="name"
+                  defaultValue="Our Nest"
+                  required
+                />
+              </label>
+              <label className="label">
+                When your story began{" "}
+                <span className="font-normal">(optional)</span>
+                <input
+                  className="field"
+                  name="relationship_start"
+                  type="date"
+                />
+              </label>
+              <button className="btn btn-primary" type="submit">
+                Create our private place
+              </button>
+            </form>
+          </section>
+          <section className="surface card p-7">
+            <Link2 className="size-6 text-[var(--plum)]" />
+            <h2 className="display mt-5 text-3xl">Join my partner</h2>
+            <form action={acceptInvite} className="mt-6 grid gap-4">
+              <label className="label">
+                Private invitation code
+                <input
+                  className="field uppercase"
+                  name="token"
+                  defaultValue={q.token ?? ""}
+                  placeholder="A1B2C3D4E5F6"
+                  required
+                />
+              </label>
+              <p className="muted text-xs">
+                Codes expire after seven days and stop working as soon as the
+                second partner joins.
+              </p>
+              <button className="btn btn-secondary" type="submit">
+                Join our Nest
+              </button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}

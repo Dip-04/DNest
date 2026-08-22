@@ -15,9 +15,11 @@ export function normalizeNest(raw: RawNest): NestContext {
     name: raw.name,
     relationship_start: raw.relationship_start,
     created_by: raw.created_by,
-    members: (raw.nest_members ?? []).map(member => ({
+    members: (raw.nest_members ?? []).map((member) => ({
       user_id: member.user_id,
-      profiles: Array.isArray(member.profiles) ? (member.profiles[0] ?? null) : member.profiles,
+      profiles: Array.isArray(member.profiles)
+        ? (member.profiles[0] ?? null)
+        : member.profiles,
     })),
   };
 }

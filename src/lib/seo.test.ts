@@ -21,7 +21,8 @@ describe("SEO configuration", () => {
   });
 
   it("normalizes canonical configuration to the origin", () => {
-    process.env.NEXT_PUBLIC_APP_URL = "https://www.dnest.example/some/path?preview=1";
+    process.env.NEXT_PUBLIC_APP_URL =
+      "https://www.dnest.example/some/path?preview=1";
     expect(getSiteUrl().toString()).toBe("https://www.dnest.example/");
   });
 
@@ -42,24 +43,44 @@ describe("SEO configuration", () => {
 
   it("marks reusable private metadata noindex and nofollow", () => {
     const value = privateMetadata("Private");
-    expect(value.robots).toMatchObject({ index: false, follow: false, nocache: true });
+    expect(value.robots).toMatchObject({
+      index: false,
+      follow: false,
+      nocache: true,
+    });
   });
 
   it("includes only public URLs in the sitemap", () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://dnest.example";
-    expect(sitemap().map(entry => entry.url)).toEqual(["https://dnest.example/", "https://dnest.example/features", "https://dnest.example/privacy", "https://dnest.example/terms"]);
+    expect(sitemap().map((entry) => entry.url)).toEqual([
+      "https://dnest.example/",
+      "https://dnest.example/features",
+      "https://dnest.example/privacy",
+      "https://dnest.example/terms",
+    ]);
   });
 
   it("advertises the sitemap and blocks private areas", () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://dnest.example";
     const value = robots();
     expect(value.sitemap).toBe("https://dnest.example/sitemap.xml");
-    expect(value.rules).toEqual(expect.arrayContaining([expect.objectContaining({ disallow: expect.arrayContaining(["/home", "/moments", "/invite/"]) })]));
+    expect(value.rules).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          disallow: expect.arrayContaining(["/home", "/moments", "/invite/"]),
+        }),
+      ]),
+    );
   });
 
   it("provides standard and maskable PWA icons", () => {
     const value = manifest();
     expect(value.start_url).toBe("/");
-    expect(value.icons).toEqual(expect.arrayContaining([expect.objectContaining({ sizes: "512x512", purpose: "any" }), expect.objectContaining({ sizes: "512x512", purpose: "maskable" })]));
+    expect(value.icons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ sizes: "512x512", purpose: "any" }),
+        expect.objectContaining({ sizes: "512x512", purpose: "maskable" }),
+      ]),
+    );
   });
 });

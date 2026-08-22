@@ -112,7 +112,10 @@ export default async function Page({
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
           {stats.map(([value, label]) => (
-            <article className="stat-keepsake surface card text-center" key={label}>
+            <article
+              className="stat-keepsake surface card text-center"
+              key={label}
+            >
               <strong className="display text-3xl">{value}</strong>
               <p className="muted mt-1 text-xs">{label}</p>
             </article>

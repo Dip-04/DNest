@@ -12,10 +12,19 @@ export const privatePagePrefixes = [
   "/reset-password",
 ] as const;
 
-export const guestOnlyPrefixes = ["/sign-in", "/sign-up", "/forgot-password"] as const;
+export const guestOnlyPrefixes = [
+  "/sign-in",
+  "/sign-up",
+  "/forgot-password",
+] as const;
 
-export function matchesRoute(pathname: string, prefixes: readonly string[]): boolean {
-  return prefixes.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
+export function matchesRoute(
+  pathname: string,
+  prefixes: readonly string[],
+): boolean {
+  return prefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 export function isPrivatePage(pathname: string): boolean {
@@ -30,8 +39,16 @@ export function isProtectedApi(pathname: string): boolean {
   return pathname === "/api" || pathname.startsWith("/api/");
 }
 
-export function safeNextPath(value: FormDataEntryValue | string | null | undefined, fallback = "/home"): string {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return fallback;
+export function safeNextPath(
+  value: FormDataEntryValue | string | null | undefined,
+  fallback = "/home",
+): string {
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//")
+  )
+    return fallback;
   try {
     const url = new URL(value, "https://dnest.invalid");
     if (url.origin !== "https://dnest.invalid") return fallback;

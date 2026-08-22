@@ -112,7 +112,7 @@ export default function LandingPage() {
           id="features"
           className="editorial-section mx-auto max-w-7xl px-5 py-24"
         >
-      <Reveal className="section-intro">
+          <Reveal className="section-intro">
             <span className="eyebrow">Everything around talking</span>
             <h2 className="display mt-3 max-w-3xl text-4xl sm:text-6xl">
               A private scrapbook and relationship companion for long-distance
@@ -122,8 +122,8 @@ export default function LandingPage() {
               Messaging helps you talk today. DNest keeps the memories, plans,
               rituals, and milestones you will want to return to years from now.
             </p>
-      </Reveal>
-      <Reveal className="memory-gallery mt-14" delay={.08}>
+          </Reveal>
+          <Reveal className="memory-gallery mt-14" delay={0.08}>
             {featureCards
               .slice(0, 3)
               .map(({ icon: Icon, title, text }, index) => (
@@ -134,19 +134,19 @@ export default function LandingPage() {
                   <div className="feature-visual" aria-hidden>
                     <Icon className="size-8" />
                     <span>{String(index + 1).padStart(2, "0")}</span>
-      </Reveal>
+                  </div>
                   <div>
                     <h3 className="display text-3xl">{title}</h3>
                     <p className="muted mt-3 leading-7">{text}</p>
                   </div>
                 </article>
               ))}
-          </div>
+          </Reveal>
         </section>
 
         <section className="relationship-path mx-auto max-w-7xl px-5 py-24">
           <div className="path-line" aria-hidden />
-      <Reveal className="grid gap-6 lg:grid-cols-3">
+          <Reveal className="grid gap-6 lg:grid-cols-3">
             {featureCards.slice(3).map(({ icon: Icon, title, text }, index) => (
               <article className="surface path-card" key={title}>
                 <span className="path-dot" aria-hidden />
@@ -156,11 +156,11 @@ export default function LandingPage() {
                 <p className="muted mt-3 leading-7">{text}</p>
               </article>
             ))}
-      </Reveal>
+          </Reveal>
         </section>
 
         <section className="mx-auto max-w-7xl px-5 py-24">
-      <Reveal className="ritual-card surface grid gap-10 p-7 sm:p-12 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
+          <Reveal className="ritual-card surface grid gap-10 p-7 sm:p-12 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
             <div>
               <Heart
                 aria-hidden
@@ -170,7 +170,7 @@ export default function LandingPage() {
               <h2 className="display mt-3 text-4xl sm:text-5xl">
                 Open it. Feel close. Add one meaningful thing.
               </h2>
-      </Reveal>
+            </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <article className="paper-note">
                 <span className="paper-tape" aria-hidden />
@@ -189,11 +189,11 @@ export default function LandingPage() {
                 </p>
               </article>
             </div>
-          </div>
+          </Reveal>
         </section>
 
         <section className="mx-auto mb-24 max-w-7xl px-5 pt-16">
-      <Reveal className="privacy-card surface grid gap-8 p-8 sm:p-12 md:grid-cols-[1fr_auto] md:items-end">
+          <Reveal className="privacy-card surface grid gap-8 p-8 sm:p-12 md:grid-cols-[1fr_auto] md:items-end">
             <div>
               <LockKeyhole className="size-7 text-[var(--plum)]" />
               <h2 className="display mt-5 text-4xl sm:text-5xl">
@@ -210,11 +210,11 @@ export default function LandingPage() {
               >
                 Read how privacy works →
               </Link>
-      </Reveal>
+            </div>
             <Link className="btn btn-primary" href="/sign-up">
               Create your private space
             </Link>
-          </div>
+          </Reveal>
         </section>
       </main>
       <MarketingFooter />

@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { isGuestOnlyPage, isPrivatePage, isProtectedApi, safeNextPath } from "@/lib/route-access";
+import {
+  isGuestOnlyPage,
+  isPrivatePage,
+  isProtectedApi,
+  safeNextPath,
+} from "@/lib/route-access";
 
 describe("route access policy", () => {
-  it.each(["/home", "/moments/new", "/us/capsules/one", "/onboarding", "/reset-password"])("protects %s", path => {
+  it.each([
+    "/home",
+    "/moments/new",
+    "/us/capsules/one",
+    "/onboarding",
+    "/reset-password",
+  ])("protects %s", (path) => {
     expect(isPrivatePage(path)).toBe(true);
   });
 
@@ -17,7 +28,9 @@ describe("route access policy", () => {
   });
 
   it("allows only same-origin relative return paths", () => {
-    expect(safeNextPath("/moments?view=timeline")).toBe("/moments?view=timeline");
+    expect(safeNextPath("/moments?view=timeline")).toBe(
+      "/moments?view=timeline",
+    );
     expect(safeNextPath("//evil.example/steal")).toBe("/home");
     expect(safeNextPath("https://evil.example/steal")).toBe("/home");
   });
