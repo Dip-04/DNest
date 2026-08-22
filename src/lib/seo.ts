@@ -4,19 +4,28 @@ export const siteName = "DNest";
 export const siteTitle = "DNest — Private Relationship App for Couples";
 export const siteDescription = "DNest is a private space for couples to save memories, share love notes, plan meetups, and keep their relationship story close across any distance.";
 
-export function getSiteUrl(): URL {
-  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  const fallback = "http://localhost:3000";
+function toHttpOrigin(value: string | undefined, assumeHttps = false): URL | null {
+  const candidate = value?.trim();
+  if (!candidate) return null;
+
   try {
-    const url = new URL(configured || fallback);
-    if (process.env.VERCEL_ENV === "production" && (!configured || url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname.endsWith(".vercel.app"))) {
-      throw new Error("NEXT_PUBLIC_APP_URL must be the canonical custom HTTPS domain in production.");
-    }
+    const url = new URL(assumeHttps && !candidate.includes("://") ? `https://${candidate}` : candidate);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
     return new URL(url.origin);
-  } catch (error) {
-    if (process.env.VERCEL_ENV === "production") throw error;
-    return new URL(fallback);
+  } catch {
+    return null;
   }
+}
+
+export function getSiteUrl(): URL {
+  // Vercel may evaluate metadata routes (including /_not-found) before project
+  // environment variables are attached. Canonical resolution must never make
+  // an otherwise valid production build fail.
+  return (
+    toHttpOrigin(process.env.NEXT_PUBLIC_APP_URL) ??
+    toHttpOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL, true) ??
+    new URL("http://localhost:3000")
+  );
 }
 
 export function publicPageMetadata({ title, description, path }: { title: string; description: string; path: string }): Metadata {

@@ -34,7 +34,7 @@ Open `http://localhost:3000`. For a local Supabase stack, use `supabase start`, 
 
 ## Environment variables
 
-See `.env.example`. `NEXT_PUBLIC_APP_URL` must be the canonical custom HTTPS origin in Vercel production, for example `https://dnest.example`. Production metadata deliberately rejects localhost, loopback addresses, and `*.vercel.app` preview origins as canonical domains.
+See `.env.example`. Set `NEXT_PUBLIC_APP_URL` to the canonical custom HTTPS origin in Vercel production, for example `https://dnest.example`. Metadata prefers that explicit value, falls back to Vercel's stable `VERCEL_PROJECT_PRODUCTION_URL`, and never fails a build merely because deployment variables are not yet available. Do not set the variable to a Vercel preview URL when a custom domain exists.
 
 Only the Supabase URL, anon key, application URL, public map/VAPID key, analytics flag, and Google meta-verification value may be browser-visible. `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PRIVATE_KEY`, cron secrets, and provider secrets are server-only.
 
