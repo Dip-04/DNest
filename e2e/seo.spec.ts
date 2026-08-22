@@ -8,6 +8,7 @@ test("homepage exposes complete public metadata and valid JSON-LD", async ({ pag
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /DNest/);
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /opengraph-image/);
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
+  await expect(page.locator('meta[name="google-site-verification"]')).toHaveAttribute("content", "_dY_pBzblQ3yamELmdEfgqFKNRG2yZr-yGGlyL05OX8");
   const blocks = await page.locator('script[type="application/ld+json"]').allTextContents();
   const schemas = JSON.parse(blocks[0]) as Array<{ "@type": string }>;
   expect(schemas.map(schema => schema["@type"])).toEqual(["WebSite", "SoftwareApplication"]);

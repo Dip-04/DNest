@@ -22,7 +22,9 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   openGraph: { title: siteTitle, description: siteDescription, url: "/", siteName, type: "website", locale: "en_US", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "DNest — Our little place, no matter the distance." }] },
   twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, images: ["/opengraph-image"] },
-  verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || "_dY_pBzblQ3yamELmdEfgqFKNRG2yZr-yGGlyL05OX8",
+  },
 };
 
 export const viewport: Viewport = { themeColor: "#a95f69", colorScheme: "light dark" };
