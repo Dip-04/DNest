@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Suspense } from "react";
+import { ToastViewport } from "@/components/toast-viewport";
 import { getSiteUrl, siteDescription, siteName, siteTitle } from "@/lib/seo";
 import "./globals.css";
 
@@ -30,5 +32,5 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#a95f69", colorScheme: "light dark" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${bodyFont.variable} ${displayFont.variable}`}><body>{children}</body></html>;
+  return <html lang="en" data-scroll-behavior="smooth" className={`${bodyFont.variable} ${displayFont.variable}`}><body><Suspense fallback={null}><ToastViewport/></Suspense>{children}</body></html>;
 }

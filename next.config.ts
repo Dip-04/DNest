@@ -15,6 +15,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  allowedDevOrigins: isDev ? ["127.0.0.1"] : undefined,
   images: { remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }] },
   async headers() {
     const noIndexHeaders = { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet, noimageindex" };
