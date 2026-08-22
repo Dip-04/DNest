@@ -21,6 +21,7 @@ export function HeroVisual() {
   return (
     <div
       className={`hero-visual ${interactive ? "is-interactive" : ""}`}
+      role="img"
       aria-label="A handcrafted nest holding a warm private room and floating memories"
       onPointerEnter={() => setInteractive(true)}
     >

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogOut, Map, Settings } from "lucide-react";
+import { LogOut, Map } from "lucide-react";
 import { signOut } from "@/features/auth/actions";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -40,13 +40,6 @@ export function AppShell({
           >
             <Map className="size-4" />
             Notifications
-          </Link>
-          <Link
-            href="/settings"
-            className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm"
-          >
-            <Settings className="size-4" />
-            Settings
           </Link>
           <form action={signOut}>
             <button

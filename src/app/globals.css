@@ -210,6 +210,15 @@ a {
   background: var(--rose-soft);
   border-color: color-mix(in srgb, var(--rose) 34%, var(--border));
 }
+.btn-danger {
+  border-color: color-mix(in srgb, #dc2626 35%, var(--border));
+  background: color-mix(in srgb, #dc2626 10%, var(--surface));
+  color: #b91c1c;
+}
+.btn-danger:hover {
+  border-color: color-mix(in srgb, #dc2626 58%, var(--border));
+  background: color-mix(in srgb, #dc2626 17%, var(--surface));
+}
 .theme-toggle {
   position: relative;
   display: inline-grid;
@@ -735,7 +744,7 @@ a {
   inset-inline: 0.75rem;
   bottom: 0.75rem;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   align-items: end;
   padding: 0.5rem;
   border: 1px solid var(--border);
@@ -743,6 +752,12 @@ a {
   background: color-mix(in srgb, var(--surface) 90%, transparent);
   box-shadow: 0 18px 60px rgba(31, 24, 29, 0.22);
   backdrop-filter: blur(22px);
+}
+
+@media (min-width: 1024px) {
+  .mobile-app-nav {
+    display: none !important;
+  }
 }
 .mobile-nav-link {
   display: flex;

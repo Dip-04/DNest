@@ -3,6 +3,7 @@ import { BookHeart, Grid2X2, Plus, Rows3 } from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
 import { EmptyState } from "@/components/empty-state";
 import { MomentCard } from "@/components/moment-card";
+import { MomentActions } from "@/components/moment-actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import type { Moment } from "@/types/database";
@@ -22,7 +23,7 @@ export default async function Page({
     .order("moment_at", { ascending: false });
   if (params.category) query = query.eq("category", params.category);
   if (params.q)
-    query = query.ilike("title", `%${params.q.replaceAll("%", "")} %`.trim());
+    query = query.ilike("title", `%${params.q.replaceAll("%", "")}%`);
   const { data } = await query;
   const moments = (data ?? []) as unknown as (Moment & {
     moment_media: { storage_path: string; sort_order: number }[];
@@ -145,6 +146,7 @@ export default async function Page({
                             Open photo
                           </Link>
                         )}
+                        <MomentActions id={moment.id} />
                       </div>
                     ),
                 )}

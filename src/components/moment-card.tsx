@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { CalendarDays, MapPin } from "lucide-react";
+import { MomentActions } from "@/components/moment-actions";
 import type { Moment } from "@/types/database";
 
 export function MomentCard({
@@ -54,6 +55,7 @@ export function MomentCard({
             </span>
           )}
         </div>
+        <MomentActions id={moment.id} />
       </div>
     </article>
   );

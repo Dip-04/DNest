@@ -139,16 +139,14 @@ export async function createMoment(form: FormData) {
         "A photo upload was interrupted, so the moment was not saved. Please try again.",
       );
     }
-    const { error: mediaError } = await supabase
-      .from("moment_media")
-      .insert({
-        nest_id: parsed.data.nest_id,
-        moment_id: moment.id,
-        storage_path: path,
-        mime_type: file.type,
-        alt_text: `Photo for ${parsed.data.title}`,
-        sort_order: index,
-      });
+    const { error: mediaError } = await supabase.from("moment_media").insert({
+      nest_id: parsed.data.nest_id,
+      moment_id: moment.id,
+      storage_path: path,
+      mime_type: file.type,
+      alt_text: `Photo for ${parsed.data.title}`,
+      sort_order: index,
+    });
     if (mediaError) {
       await supabase.storage.from("moment-media").remove([path]);
       await supabase.from("moments").delete().eq("id", moment.id);
@@ -156,6 +154,7 @@ export async function createMoment(form: FormData) {
     }
   }
   revalidatePath("/moments");
+  revalidatePath("/home");
   succeed("/moments", "Your Moment was saved safely.");
 }
 export async function updateMoment(form: FormData) {
@@ -164,26 +163,49 @@ export async function updateMoment(form: FormData) {
   if (!id.success || !parsed.success)
     fail("/moments", "Check the Moment and try again.");
   const { supabase } = await auth();
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("moments")
     .update({
-      ...parsed.data,
+      title: parsed.data.title,
+      story: parsed.data.story,
       moment_at: new Date(parsed.data.moment_at).toISOString(),
+      timezone: parsed.data.timezone,
+      category: parsed.data.category,
       location_name: parsed.data.location_name || null,
       mood: parsed.data.mood || null,
     })
-    .eq("id", id.data);
-  if (error) fail("/moments", "That Moment couldn’t be updated.");
+    .eq("id", id.data)
+    .eq("nest_id", parsed.data.nest_id)
+    .select("id")
+    .maybeSingle();
+  if (error || !updated)
+    fail("/moments", "That Moment could not be updated.");
   revalidatePath("/moments");
+  revalidatePath("/home");
   succeed("/moments", "Your Moment was updated.");
 }
 export async function deleteMoment(form: FormData) {
   const id = uuid.safeParse(form.get("id"));
   if (!id.success) fail("/moments", "That Moment could not be identified.");
   const { supabase } = await auth();
-  const { error } = await supabase.from("moments").delete().eq("id", id.data);
-  if (error) fail("/moments", "That Moment couldn’t be removed.");
+  const { data: media } = await supabase
+    .from("moment_media")
+    .select("storage_path")
+    .eq("moment_id", id.data);
+  const { data: deleted, error } = await supabase
+    .from("moments")
+    .delete()
+    .eq("id", id.data)
+    .select("id")
+    .maybeSingle();
+  if (error || !deleted)
+    fail("/moments", "That Moment could not be removed.");
+  const paths = (media ?? []).map(({ storage_path }) => storage_path);
+  if (paths.length > 0) {
+    await supabase.storage.from("moment-media").remove(paths);
+  }
   revalidatePath("/moments");
+  revalidatePath("/home");
   succeed("/moments", "The Moment was removed.");
 }
 export async function setMood(form: FormData) {
@@ -196,17 +218,15 @@ export async function setMood(form: FormData) {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-  const { error } = await supabase
-    .from("daily_moods")
-    .upsert(
-      {
-        nest_id: parsed.data.nest_id,
-        user_id: user.id,
-        local_date: localDate,
-        mood: parsed.data.mood,
-      },
-      { onConflict: "user_id,local_date" },
-    );
+  const { error } = await supabase.from("daily_moods").upsert(
+    {
+      nest_id: parsed.data.nest_id,
+      user_id: user.id,
+      local_date: localDate,
+      mood: parsed.data.mood,
+    },
+    { onConflict: "user_id,local_date" },
+  );
   if (error) fail("/home", "Your mood couldn’t be saved.");
   revalidatePath("/home");
   succeed("/home", "Today’s mood was saved.");
@@ -230,20 +250,18 @@ export async function createNote(form: FormData) {
   if (!parsed.success) fail("/notes", firstIssue(parsed.error));
   const { supabase, user } = await auth();
   const scheduled = Boolean(parsed.data.deliver_at);
-  const { error } = await supabase
-    .from("love_notes")
-    .insert({
-      nest_id: parsed.data.nest_id,
-      sender_id: user.id,
-      recipient_id: parsed.data.recipient_id,
-      body: parsed.data.body,
-      theme: parsed.data.theme,
-      status: scheduled ? "scheduled" : "delivered",
-      deliver_at: parsed.data.deliver_at
-        ? new Date(parsed.data.deliver_at).toISOString()
-        : new Date().toISOString(),
-      delivered_at: scheduled ? null : new Date().toISOString(),
-    });
+  const { error } = await supabase.from("love_notes").insert({
+    nest_id: parsed.data.nest_id,
+    sender_id: user.id,
+    recipient_id: parsed.data.recipient_id,
+    body: parsed.data.body,
+    theme: parsed.data.theme,
+    status: scheduled ? "scheduled" : "delivered",
+    deliver_at: parsed.data.deliver_at
+      ? new Date(parsed.data.deliver_at).toISOString()
+      : new Date().toISOString(),
+    delivered_at: scheduled ? null : new Date().toISOString(),
+  });
   if (error) fail("/notes", "Your note couldn’t be saved. Please try again.");
   revalidatePath("/notes");
   succeed(
@@ -257,13 +275,11 @@ export async function createMeetup(form: FormData) {
   const parsed = meetupSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/plans", firstIssue(parsed.error));
   const { supabase, user } = await auth();
-  const { error } = await supabase
-    .from("meetups")
-    .insert({
-      ...parsed.data,
-      starts_at: new Date(parsed.data.starts_at).toISOString(),
-      created_by: user.id,
-    });
+  const { error } = await supabase.from("meetups").insert({
+    ...parsed.data,
+    starts_at: new Date(parsed.data.starts_at).toISOString(),
+    created_by: user.id,
+  });
   if (error) fail("/plans", "The meetup couldn’t be saved.");
   revalidatePath("/plans");
   succeed("/plans", "Your next hello was added.");
@@ -283,17 +299,15 @@ export async function createCapsule(form: FormData) {
   const parsed = capsuleSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/us", firstIssue(parsed.error));
   const { supabase, user } = await auth();
-  const { error } = await supabase
-    .from("time_capsules")
-    .insert({
-      nest_id: parsed.data.nest_id,
-      created_by: user.id,
-      title: parsed.data.title,
-      encrypted_content: parsed.data.content,
-      unlock_at: new Date(parsed.data.unlock_at).toISOString(),
-      target_timezone: parsed.data.timezone,
-      strict_lock: true,
-    });
+  const { error } = await supabase.from("time_capsules").insert({
+    nest_id: parsed.data.nest_id,
+    created_by: user.id,
+    title: parsed.data.title,
+    encrypted_content: parsed.data.content,
+    unlock_at: new Date(parsed.data.unlock_at).toISOString(),
+    target_timezone: parsed.data.timezone,
+    strict_lock: true,
+  });
   if (error) fail("/us", "The capsule couldn’t be sealed.");
   revalidatePath("/us");
   succeed("/us", "Your Time Capsule is sealed until its unlock date.");
@@ -302,16 +316,14 @@ export async function answerQuestion(form: FormData) {
   const parsed = answerSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/questions", firstIssue(parsed.error));
   const { supabase, user } = await auth();
-  const { error } = await supabase
-    .from("daily_question_answers")
-    .upsert(
-      {
-        ...parsed.data,
-        user_id: user.id,
-        answered_at: new Date().toISOString(),
-      },
-      { onConflict: "nest_id,local_date,user_id" },
-    );
+  const { error } = await supabase.from("daily_question_answers").upsert(
+    {
+      ...parsed.data,
+      user_id: user.id,
+      answered_at: new Date().toISOString(),
+    },
+    { onConflict: "nest_id,local_date,user_id" },
+  );
   if (error) fail("/questions", "Your answer couldn’t be saved.");
   revalidatePath("/questions");
   succeed(
@@ -351,14 +363,12 @@ export async function startChallenge(form: FormData) {
   if (!nestId.success || !challengeId.success)
     fail("/together", "That challenge could not be identified.");
   const { supabase, user } = await auth();
-  const { error } = await supabase
-    .from("nest_challenges")
-    .insert({
-      nest_id: nestId.data,
-      challenge_id: challengeId.data,
-      started_by: user.id,
-      starts_on: new Date().toISOString().slice(0, 10),
-    });
+  const { error } = await supabase.from("nest_challenges").insert({
+    nest_id: nestId.data,
+    challenge_id: challengeId.data,
+    started_by: user.id,
+    starts_on: new Date().toISOString().slice(0, 10),
+  });
   if (error) fail("/together", "The challenge couldn’t be started.");
   revalidatePath("/together");
   succeed("/together", "Your couple challenge has started.");
@@ -372,15 +382,13 @@ export async function createMeetupTask(form: FormData) {
   if (!nestId.success || !meetupId.success || !title)
     fail("/plans", "Add a valid checklist item.");
   const { supabase, user } = await auth();
-  const { error } = await supabase
-    .from("meetup_tasks")
-    .insert({
-      nest_id: nestId.data,
-      meetup_id: meetupId.data,
-      created_by: user.id,
-      title,
-      category: String(form.get("category") ?? "Custom").slice(0, 40),
-    });
+  const { error } = await supabase.from("meetup_tasks").insert({
+    nest_id: nestId.data,
+    meetup_id: meetupId.data,
+    created_by: user.id,
+    title,
+    category: String(form.get("category") ?? "Custom").slice(0, 40),
+  });
   if (error) fail("/plans", "The checklist item couldn’t be added.");
   revalidatePath("/plans");
   succeed("/plans", "Checklist item added.");
@@ -463,17 +471,15 @@ export async function createImportantDate(form: FormData) {
   if (!nestId.success || !title || !/\d{4}-\d{2}-\d{2}/.test(eventDate))
     fail("/us", "Add a title and valid date.");
   const { supabase, user } = await auth();
-  const { error } = await supabase
-    .from("important_dates")
-    .insert({
-      nest_id: nestId.data,
-      created_by: user.id,
-      title,
-      event_date: eventDate,
-      timezone: String(form.get("timezone") ?? "UTC"),
-      category: String(form.get("category") ?? "Custom").slice(0, 50),
-      recurring_yearly: form.get("recurring_yearly") === "on",
-    });
+  const { error } = await supabase.from("important_dates").insert({
+    nest_id: nestId.data,
+    created_by: user.id,
+    title,
+    event_date: eventDate,
+    timezone: String(form.get("timezone") ?? "UTC"),
+    category: String(form.get("category") ?? "Custom").slice(0, 50),
+    recurring_yearly: form.get("recurring_yearly") === "on",
+  });
   if (error) fail("/us", "That important date couldn’t be saved.");
   revalidatePath("/us");
   succeed("/us", "Important date saved.");
