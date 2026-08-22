@@ -22,6 +22,7 @@ function applyTheme(theme: Theme) {
     .querySelector('meta[name="theme-color"]')
     ?.setAttribute("content", theme === "dark" ? "#121318" : "#a95f69");
   listeners.forEach((listener) => listener());
+  window.dispatchEvent(new Event("dnest-theme-change"));
 }
 
 function subscribe(listener: () => void) {

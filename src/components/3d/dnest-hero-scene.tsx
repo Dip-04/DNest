@@ -13,6 +13,15 @@ function subscribeMedia(listener: () => void) {
   return () => query.removeEventListener("change", listener);
 }
 
+function subscribeTheme(listener: () => void) {
+  window.addEventListener("dnest-theme-change", listener);
+  return () => window.removeEventListener("dnest-theme-change", listener);
+}
+
+function isDarkTheme() {
+  return document.documentElement.dataset.theme === "dark";
+}
+
 function NestModel({ dark }: { dark: boolean }) {
   const group = useRef<Group>(null);
   useFrame((state, delta) => {
@@ -136,9 +145,7 @@ export default function DnestHeroScene() {
         .matches,
     () => true,
   );
-  const dark =
-    typeof document !== "undefined" &&
-    document.documentElement.dataset.theme === "dark";
+  const dark = useSyncExternalStore(subscribeTheme, isDarkTheme, () => false);
   if (simplify)
     return (
       <div className="nest-fallback" aria-hidden>

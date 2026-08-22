@@ -151,7 +151,7 @@ export default async function Home({
           </div>
         </article>
         {meetup ? (
-          <article className="card overflow-hidden bg-[linear-gradient(145deg,#65506f,#a95f69)] p-7 text-white">
+          <article className="meetup-hero card overflow-hidden p-7 text-white">
             <div className="flex items-center gap-2 text-sm font-bold">
               <CalendarDays className="size-4" />
               Next hello · {meetup.destination}
@@ -181,7 +181,7 @@ export default async function Home({
           <form action={thinkOfPartner} className="mt-6">
             <input type="hidden" name="nest_id" value={context.nest.id} />
             <button
-              className="btn btn-primary w-full"
+              className="thinking-button btn btn-primary w-full"
               disabled={!partner}
               type="submit"
             >

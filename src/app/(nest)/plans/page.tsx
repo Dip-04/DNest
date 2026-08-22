@@ -50,7 +50,7 @@ export default async function Page({
       )}
       <section className="mt-7 grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
         {upcoming ? (
-          <article className="card bg-[linear-gradient(145deg,#65506f,#a95f69)] p-7 text-white">
+          <article className="meetup-hero card p-7 text-white">
             <span className="text-sm font-bold">
               ✈ Next hello · {upcoming.destination}
             </span>
@@ -212,7 +212,7 @@ export default async function Page({
             {wishlist?.length ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 {wishlist.map((item) => (
-                  <article className="surface card" key={item.id}>
+                  <article className="dream-card surface card" key={item.id}>
                     <div className="flex justify-between">
                       <span className="chip capitalize">{item.status}</span>
                       <MapPin className="size-4 text-[var(--muted)]" />
