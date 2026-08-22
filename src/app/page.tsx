@@ -13,7 +13,6 @@ import {
 import { HeroVisual } from "@/components/3d/hero-visual";
 import { MarketingFooter, MarketingHeader } from "@/components/marketing-shell";
 import { JsonLd } from "@/components/seo/json-ld";
-import { Reveal } from "@/components/reveal";
 import { getSiteUrl, siteDescription, siteName } from "@/lib/seo";
 
 const featureCards = [
@@ -112,7 +111,7 @@ export default function LandingPage() {
           id="features"
           className="editorial-section mx-auto max-w-7xl px-5 py-24"
         >
-          <Reveal className="section-intro">
+          <div className="section-intro scroll-reveal">
             <span className="eyebrow">Everything around talking</span>
             <h2 className="display mt-3 max-w-3xl text-4xl sm:text-6xl">
               A private scrapbook and relationship companion for long-distance
@@ -122,8 +121,8 @@ export default function LandingPage() {
               Messaging helps you talk today. DNest keeps the memories, plans,
               rituals, and milestones you will want to return to years from now.
             </p>
-          </Reveal>
-          <Reveal className="memory-gallery mt-14" delay={0.08}>
+          </div>
+          <div className="memory-gallery scroll-reveal mt-14">
             {featureCards
               .slice(0, 3)
               .map(({ icon: Icon, title, text }, index) => (
@@ -141,12 +140,12 @@ export default function LandingPage() {
                   </div>
                 </article>
               ))}
-          </Reveal>
+          </div>
         </section>
 
         <section className="relationship-path mx-auto max-w-7xl px-5 py-24">
           <div className="path-line" aria-hidden />
-          <Reveal className="grid gap-6 lg:grid-cols-3">
+          <div className="scroll-reveal grid gap-6 lg:grid-cols-3">
             {featureCards.slice(3).map(({ icon: Icon, title, text }, index) => (
               <article className="surface path-card" key={title}>
                 <span className="path-dot" aria-hidden />
@@ -156,11 +155,11 @@ export default function LandingPage() {
                 <p className="muted mt-3 leading-7">{text}</p>
               </article>
             ))}
-          </Reveal>
+          </div>
         </section>
 
         <section className="mx-auto max-w-7xl px-5 py-24">
-          <Reveal className="ritual-card surface grid gap-10 p-7 sm:p-12 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
+          <div className="ritual-card surface scroll-reveal grid gap-10 p-7 sm:p-12 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
             <div>
               <Heart
                 aria-hidden
@@ -189,11 +188,11 @@ export default function LandingPage() {
                 </p>
               </article>
             </div>
-          </Reveal>
+          </div>
         </section>
 
         <section className="mx-auto mb-24 max-w-7xl px-5 pt-16">
-          <Reveal className="privacy-card surface grid gap-8 p-8 sm:p-12 md:grid-cols-[1fr_auto] md:items-end">
+          <div className="privacy-card surface scroll-reveal grid gap-8 p-8 sm:p-12 md:grid-cols-[1fr_auto] md:items-end">
             <div>
               <LockKeyhole className="size-7 text-[var(--plum)]" />
               <h2 className="display mt-5 text-4xl sm:text-5xl">
@@ -214,7 +213,7 @@ export default function LandingPage() {
             <Link className="btn btn-primary" href="/sign-up">
               Create your private space
             </Link>
-          </Reveal>
+          </div>
         </section>
       </main>
       <MarketingFooter />

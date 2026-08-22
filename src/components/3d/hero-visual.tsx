@@ -31,6 +31,7 @@ export function HeroVisual() {
           alt=""
           fill
           priority
+          fetchPriority="high"
           unoptimized
           sizes="(max-width: 767px) 100vw, 54vw"
           className="object-cover"
