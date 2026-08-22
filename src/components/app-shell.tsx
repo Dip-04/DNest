@@ -1,26 +1,14 @@
 import Link from "next/link";
-import {
-  BookHeart,
-  Heart,
-  Home,
-  LogOut,
-  Map,
-  Plane,
-  Settings,
-  Sparkles,
-  UserRound,
-} from "lucide-react";
+import { LogOut, Map, Settings } from "lucide-react";
 import { signOut } from "@/features/auth/actions";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandMark } from "@/components/brand-mark";
+import {
+  DesktopAppNavigation,
+  MobileAppNavigation,
+} from "@/components/app-navigation";
 
-const nav = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/moments", label: "Moments", icon: BookHeart },
-  { href: "/together", label: "Together", icon: Sparkles },
-  { href: "/plans", label: "Plans", icon: Plane },
-  { href: "/us", label: "Us", icon: UserRound },
-];
 export function AppShell({
   children,
   nestName,
@@ -29,26 +17,18 @@ export function AppShell({
   nestName: string;
 }) {
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]">
+    <div className="app-shell min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
       <ServiceWorkerRegistration />
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-[var(--border)] bg-[var(--surface)] p-5 lg:flex">
-        <Link href="/home" className="display text-2xl font-bold">
-          <Heart className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]" />
+      <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-[17rem] flex-col p-6 lg:flex">
+        <Link
+          href="/home"
+          className="display flex items-center gap-2 text-2xl font-bold"
+        >
+          <BrandMark className="size-10 text-[var(--rose-deep)]" />
           DNest
         </Link>
-        <p className="muted mt-2 truncate text-xs">{nestName}</p>
-        <nav aria-label="Nest navigation" className="mt-10 grid gap-1">
-          {nav.map(({ href, label, icon: Icon }) => (
-            <Link
-              href={href}
-              key={href}
-              className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold hover:bg-[var(--rose-soft)]"
-            >
-              <Icon className="size-5 text-[var(--rose-deep)]" />
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <p className="nest-name muted mt-3 truncate text-xs">{nestName}</p>
+        <DesktopAppNavigation />
         <div className="mt-auto grid gap-1">
           <div className="flex items-center gap-3 px-3 py-2 text-sm">
             <ThemeToggle />
@@ -80,24 +60,10 @@ export function AppShell({
         </div>
       </aside>
       <ThemeToggle className="fixed right-4 bottom-24 z-30 lg:hidden" />
-      <main className="mx-auto w-full max-w-7xl px-4 pt-6 pb-28 sm:px-7 lg:col-start-2 lg:px-10 lg:py-9">
+      <main className="app-content mx-auto w-full max-w-7xl px-4 pt-6 pb-28 sm:px-7 lg:col-start-2 lg:px-10 lg:py-10">
         {children}
       </main>
-      <nav
-        aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-3 z-30 flex justify-around rounded-[1.4rem] border border-[var(--border)] bg-[var(--surface)] p-2 shadow-2xl lg:hidden"
-      >
-        {nav.map(({ href, label, icon: Icon }) => (
-          <Link
-            href={href}
-            key={href}
-            className="flex min-w-14 flex-col items-center gap-1 rounded-xl px-2 py-1 text-[.65rem] font-bold"
-          >
-            <Icon className="size-5 text-[var(--rose-deep)]" />
-            {label}
-          </Link>
-        ))}
-      </nav>
+      <MobileAppNavigation />
     </div>
   );
 }

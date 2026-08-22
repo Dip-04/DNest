@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandMark } from "@/components/brand-mark";
 
 const links = [
   { href: "/features", label: "Features" },
@@ -10,20 +10,17 @@ const links = [
 
 export function MarketingHeader() {
   return (
-    <header>
+    <header className="marketing-header">
       <nav
         aria-label="Main navigation"
-        className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-5 py-6"
+        className="marketing-nav mx-auto flex max-w-7xl items-center justify-between gap-5 px-5 py-4"
       >
         <Link
           href="/"
           aria-label="DNest home"
-          className="display shrink-0 text-2xl font-bold"
+          className="display flex shrink-0 items-center gap-2 text-2xl font-bold"
         >
-          <Heart
-            aria-hidden
-            className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]"
-          />
+          <BrandMark className="size-9 text-[var(--rose-deep)]" />
           DNest
         </Link>
         <div className="hidden items-center gap-5 text-sm font-bold md:flex">
@@ -56,10 +53,13 @@ export function MarketingHeader() {
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-[var(--border)]">
+    <footer className="marketing-footer border-t border-[var(--border)]">
       <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-10 text-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="display text-xl font-bold">DNest</p>
+          <p className="display flex items-center gap-2 text-xl font-bold">
+            <BrandMark className="size-8 text-[var(--rose-deep)]" />
+            DNest
+          </p>
           <p className="muted mt-1">
             Our little place, no matter the distance.
           </p>

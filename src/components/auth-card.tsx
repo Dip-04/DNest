@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandMark } from "@/components/brand-mark";
 
 export function AuthCard({
   title,
@@ -28,17 +28,37 @@ export function AuthCard({
   message?: string;
 }) {
   return (
-    <main className="relative grid min-h-screen place-items-center p-5">
+    <main className="auth-page relative grid min-h-screen place-items-center p-5">
       <ThemeToggle className="absolute right-5 top-5" />
-      <section className="w-full max-w-md">
-        <Link
-          href="/"
-          className="display mb-8 block text-center text-2xl font-bold"
+      <section className="auth-shell surface grid w-full max-w-5xl overflow-hidden lg:grid-cols-[.92fr_1.08fr]">
+        <div
+          className="auth-art hidden min-h-[42rem] place-items-center lg:grid"
+          aria-hidden
         >
-          <Heart className="mr-2 inline size-5 fill-[var(--rose)] text-[var(--rose)]" />
-          DNest
-        </Link>
-        <div className="surface card p-7 sm:p-9">
+          <div className="auth-nest">
+            <span />
+            <span />
+            <span />
+            <div className="auth-room">
+              <i />
+              <i />
+            </div>
+          </div>
+          <div className="auth-polaroid auth-polaroid-one">
+            <i />
+          </div>
+          <div className="auth-polaroid auth-polaroid-two">
+            <i />
+          </div>
+        </div>
+        <div className="p-7 sm:p-10 lg:p-14">
+          <Link
+            href="/"
+            className="display mb-10 flex items-center gap-2 text-2xl font-bold"
+          >
+            <BrandMark className="size-10 text-[var(--rose-deep)]" />
+            DNest
+          </Link>
           <span className="eyebrow">Private by design</span>
           <h1 className="display mt-3 text-4xl">{title}</h1>
           <p className="muted mt-2 leading-6">{subtitle}</p>
