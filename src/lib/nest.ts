@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { requireUser } from "@/lib/supabase/server";
+import { normalizeNest, type RawNest } from "@/lib/nest-context";
 import type { NestContext } from "@/types/database";
 
 export const getNestContext=cache(async():Promise<{userId:string;nest:NestContext}|null>=>{
@@ -9,5 +10,6 @@ export const getNestContext=cache(async():Promise<{userId:string;nest:NestContex
  if(!membership) return null;
  const {data,error}=await session.supabase.from("nests").select("id,name,relationship_start,created_by,nest_members(user_id,profiles(id,display_name,avatar_path,birthday,timezone,city,latitude,longitude))").eq("id",membership.nest_id).single();
  if(error||!data) return null;
- return {userId:session.user.id,nest:data as unknown as NestContext};
+ const raw = data as unknown as RawNest;
+ return {userId:session.user.id,nest:normalizeNest(raw)};
 });
