@@ -1,7 +1,10 @@
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, ExternalLink } from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
 import { EmptyState } from "@/components/empty-state";
-import { markNotificationRead } from "@/features/shared/actions";
+import {
+  markNotificationRead,
+  openNotification,
+} from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
 export default async function Page() {
   const supabase = await createClient();
@@ -39,17 +42,29 @@ export default async function Page() {
                   }).format(new Date(item.created_at))}
                 </p>
               </div>
-              {!item.read_at && (
-                <form action={markNotificationRead}>
+              <div className="flex shrink-0 gap-2">
+                <form action={openNotification}>
                   <input type="hidden" name="id" value={item.id} />
                   <button
-                    className="btn btn-secondary !px-3"
-                    aria-label="Mark as read"
+                    className="btn btn-primary !px-3"
+                    aria-label={`Open ${item.title}`}
+                    title="Open related page"
                   >
-                    <Check className="size-4" />
+                    <ExternalLink className="size-4" />
                   </button>
                 </form>
-              )}
+                {!item.read_at && (
+                  <form action={markNotificationRead}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <button
+                      className="btn btn-secondary !px-3"
+                      aria-label="Mark as read"
+                    >
+                      <Check className="size-4" />
+                    </button>
+                  </form>
+                )}
+              </div>
             </article>
           ))}
         </div>

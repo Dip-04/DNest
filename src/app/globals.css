@@ -792,6 +792,60 @@ a {
   color: var(--rose-deep);
   background: var(--rose-soft);
 }
+.live-distance-map {
+  position: relative;
+  min-height: 15rem;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  background:
+    radial-gradient(circle at 18% 35%, var(--sage-soft) 0 9%, transparent 9.5%),
+    radial-gradient(
+      circle at 70% 45%,
+      var(--sage-soft) 0 15%,
+      transparent 15.5%
+    ),
+    radial-gradient(
+      circle at 48% 73%,
+      var(--sage-soft) 0 11%,
+      transparent 11.5%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 29px,
+      color-mix(in srgb, var(--border) 45%, transparent) 30px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 39px,
+      color-mix(in srgb, var(--border) 45%, transparent) 40px
+    ),
+    color-mix(in srgb, var(--plum-soft) 45%, var(--surface));
+}
+.live-distance-pin {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  max-width: 8rem;
+  color: var(--plum);
+  font-size: 0.7rem;
+  font-weight: 800;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(
+    0 3px 5px color-mix(in srgb, var(--foreground) 25%, transparent)
+  );
+}
+.live-distance-pin span {
+  overflow: hidden;
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  background: var(--surface);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.live-distance-pin-me {
+  color: var(--rose-deep);
+}
 
 @media (min-width: 1024px) {
   .mobile-app-nav {

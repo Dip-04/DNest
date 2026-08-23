@@ -1,9 +1,16 @@
 "use client";
 
 import { LocateFixed } from "lucide-react";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { showToast } from "@/components/toast-viewport";
-import { saveCurrentLocation } from "@/features/shared/actions";
+import {
+  saveCurrentLocation,
+  stopCurrentLocation,
+} from "@/features/shared/actions";
+import {
+  liveLocationEvent,
+  liveLocationStorageKey,
+} from "@/components/live-location-tracker";
 
 export function LocationFields({
   defaultCity,
@@ -17,6 +24,24 @@ export function LocationFields({
   const [latitude, setLatitude] = useState<number | null>(defaultLatitude);
   const [longitude, setLongitude] = useState<number | null>(defaultLongitude);
   const [locating, setLocating] = useState(false);
+  const live = useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener(liveLocationEvent, onStoreChange);
+      window.addEventListener("storage", onStoreChange);
+      return () => {
+        window.removeEventListener(liveLocationEvent, onStoreChange);
+        window.removeEventListener("storage", onStoreChange);
+      };
+    },
+    () => localStorage.getItem(liveLocationStorageKey) === "on",
+    () => false,
+  );
+
+  function setLiveSharing(enabled: boolean) {
+    if (enabled) localStorage.setItem(liveLocationStorageKey, "on");
+    else localStorage.removeItem(liveLocationStorageKey);
+    window.dispatchEvent(new Event(liveLocationEvent));
+  }
 
   function captureLocation() {
     if (!("geolocation" in navigator)) {
@@ -36,6 +61,7 @@ export function LocationFields({
           message: "Your location could not be saved.",
         }));
         setLocating(false);
+        if (result.ok) setLiveSharing(true);
         showToast(result.ok ? "success" : "error", result.message);
       },
       () => {
@@ -63,9 +89,11 @@ export function LocationFields({
       />
       <div className="rounded-2xl border border-[var(--border)] p-3">
         <p className="muted text-xs">
-          {latitude != null && longitude != null
-            ? "Private location saved. Distance appears when your partner saves theirs too."
-            : "Add your private location to calculate the distance between you."}
+          {live
+            ? "Live location is on. It updates while DNest is open."
+            : latitude != null && longitude != null
+              ? "Your last private location is saved. Turn on live location to keep it updated."
+              : "Add your private location to calculate the distance between you."}
         </p>
         <button
           className="btn btn-secondary mt-3"
@@ -74,8 +102,28 @@ export function LocationFields({
           onClick={captureLocation}
         >
           <LocateFixed className="size-4" />
-          {locating ? "Saving locationâ€¦" : "Use my current location"}
+          {locating
+            ? "Turning on locationâ€¦"
+            : live
+              ? "Update location now"
+              : "Turn on live location"}
         </button>
+        {live && (
+          <button
+            className="btn mt-3"
+            type="button"
+            onClick={async () => {
+              const result = await stopCurrentLocation().catch(() => ({
+                ok: false,
+                message: "Live location could not be stopped.",
+              }));
+              if (result.ok) setLiveSharing(false);
+              showToast(result.ok ? "success" : "error", result.message);
+            }}
+          >
+            Stop live sharing
+          </button>
+        )}
       </div>
     </>
   );

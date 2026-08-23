@@ -12,6 +12,7 @@ import { AnimatedPage } from "@/components/animated-page";
 import { EmptyState } from "@/components/empty-state";
 import { MeetupCountdown } from "@/components/meetup-countdown";
 import { MoodPicker } from "@/components/mood-picker";
+import { PartnerDistance } from "@/components/partner-distance";
 import { thinkOfPartner } from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
@@ -76,7 +77,10 @@ export default async function Home({
   const onThisDay = recent.find((moment) =>
     yearsAgoOnThisDay(moment.moment_at),
   );
-  const distance = me && partner ? distanceKm(me, partner) : null;
+  const distance =
+    me?.location_sharing && partner?.location_sharing
+      ? distanceKm(me, partner)
+      : null;
   const query = await searchParams;
   const greeting = new Intl.DateTimeFormat("en", {
     timeZone: me?.timezone ?? "UTC",
@@ -99,14 +103,6 @@ export default async function Home({
               ? `${partner.display_name}’s time is ${formatLocalTime(partner.timezone)}${distance != null ? ` · ${distance.toLocaleString()} km apart` : ""}`
               : "Your Nest is ready for the person you love."}
           </p>
-          {partner && distance == null && (
-            <p className="mt-2 text-xs text-[var(--rose-deep)]">
-              <Link className="underline" href="/settings">
-                Add your current location
-              </Link>{" "}
-              and ask your partner to do the same to show your distance.
-            </p>
-          )}
         </div>
         <Link
           href="/notifications"
@@ -120,6 +116,24 @@ export default async function Home({
           )}
         </Link>
       </header>
+      {me && partner && (
+        <PartnerDistance
+          initialMe={{
+            id: me.id,
+            name: me.display_name,
+            latitude: me.latitude,
+            longitude: me.longitude,
+            locationSharing: me.location_sharing,
+          }}
+          initialPartner={{
+            id: partner.id,
+            name: partner.display_name,
+            latitude: partner.latitude,
+            longitude: partner.longitude,
+            locationSharing: partner.location_sharing,
+          }}
+        />
+      )}
       {query.message && (
         <p
           role="status"

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyPartner } from "@/lib/partner-notifications";
+import { safeNextPath } from "@/lib/route-access";
 import {
   acceptInviteSchema,
   answerSchema,
@@ -560,6 +561,26 @@ export async function markNotificationRead(form: FormData) {
   revalidatePath("/notifications");
   succeed("/notifications", "Notification marked as read.");
 }
+
+export async function openNotification(form: FormData) {
+  const id = uuid.safeParse(form.get("id"));
+  if (!id.success)
+    fail("/notifications", "That notification could not be identified.");
+  const { supabase } = await auth();
+  const { data: notification, error } = await supabase
+    .from("notifications")
+    .select("target_path")
+    .eq("id", id.data)
+    .maybeSingle();
+  if (error || !notification)
+    fail("/notifications", "That notification could not be opened.");
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", id.data);
+  revalidatePath("/notifications");
+  redirect(safeNextPath(notification.target_path, "/notifications"));
+}
 export async function saveDateIdea(form: FormData) {
   const nestId = uuid.safeParse(form.get("nest_id"));
   const ideaId = uuid.safeParse(form.get("idea_id"));
@@ -796,7 +817,12 @@ export async function saveCurrentLocation(form: FormData): Promise<{
   const { supabase, user } = await auth();
   const { error } = await supabase
     .from("profiles")
-    .update({ latitude, longitude })
+    .update({
+      latitude,
+      longitude,
+      location_sharing: true,
+      location_updated_at: new Date().toISOString(),
+    })
     .eq("id", user.id);
   if (error) {
     return { ok: false, message: "Your location could not be saved." };
@@ -808,7 +834,7 @@ export async function saveCurrentLocation(form: FormData): Promise<{
     .eq("user_id", user.id)
     .eq("status", "active")
     .maybeSingle();
-  if (membership) {
+  if (membership && form.get("silent") !== "true") {
     await notifyPartner({
       nestId: membership.nest_id,
       actorId: user.id,
@@ -823,6 +849,21 @@ export async function saveCurrentLocation(form: FormData): Promise<{
     ok: true,
     message: "Location saved. Distance will show when both partners save it.",
   };
+}
+
+export async function stopCurrentLocation(): Promise<{
+  ok: boolean;
+  message: string;
+}> {
+  const { supabase, user } = await auth();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ location_sharing: false })
+    .eq("id", user.id);
+  if (error)
+    return { ok: false, message: "Live location could not be stopped." };
+  revalidatePath("/", "layout");
+  return { ok: true, message: "Live location is off." };
 }
 
 export async function updateProfile(form: FormData) {

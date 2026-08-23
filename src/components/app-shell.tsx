@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LogOut, Map } from "lucide-react";
 import { signOut } from "@/features/auth/actions";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { LiveLocationTracker } from "@/components/live-location-tracker";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandMark } from "@/components/brand-mark";
 import {
@@ -19,6 +20,7 @@ export function AppShell({
   return (
     <div className="app-shell min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
       <ServiceWorkerRegistration />
+      <LiveLocationTracker />
       <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-[17rem] flex-col p-6 lg:flex">
         <Link
           href="/home"

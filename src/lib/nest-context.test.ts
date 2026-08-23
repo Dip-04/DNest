@@ -12,6 +12,8 @@ describe("normalizeNest", () => {
       city: null,
       latitude: null,
       longitude: null,
+      location_sharing: false,
+      location_updated_at: null,
     };
     const raw: RawNest = {
       id: "nest-1",

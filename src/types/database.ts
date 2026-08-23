@@ -18,6 +18,8 @@ export interface Profile {
   city: string | null;
   latitude: number | null;
   longitude: number | null;
+  location_sharing: boolean;
+  location_updated_at: string | null;
 }
 export interface Moment {
   id: string;
