@@ -137,8 +137,7 @@ export async function deleteNest(form: FormData) {
     .select("name,created_by")
     .eq("id", parsed.data.nest_id)
     .maybeSingle();
-  if (nestError || !nest)
-    fail("/settings", "That Nest could not be found.");
+  if (nestError || !nest) fail("/settings", "That Nest could not be found.");
   if (nest.created_by !== user.id)
     fail("/settings", "Only the person who created this Nest can delete it.");
   if (parsed.data.confirmation !== nest.name)
@@ -297,8 +296,7 @@ export async function updateMoment(form: FormData) {
     .eq("nest_id", parsed.data.nest_id)
     .select("id")
     .maybeSingle();
-  if (error || !updated)
-    fail("/moments", "That Moment could not be updated.");
+  if (error || !updated) fail("/moments", "That Moment could not be updated.");
   revalidatePath("/moments");
   revalidatePath("/home");
   succeed("/moments", "Your Moment was updated.");
@@ -317,8 +315,7 @@ export async function deleteMoment(form: FormData) {
     .eq("id", id.data)
     .select("id")
     .maybeSingle();
-  if (error || !deleted)
-    fail("/moments", "That Moment could not be removed.");
+  if (error || !deleted) fail("/moments", "That Moment could not be removed.");
   const paths = (media ?? []).map(({ storage_path }) => storage_path);
   if (paths.length > 0) {
     await supabase.storage.from("moment-media").remove(paths);

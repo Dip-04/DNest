@@ -231,9 +231,9 @@ export default async function Page({
           {isNestCreator ? (
             <>
               <p className="muted mt-3 max-w-3xl text-sm leading-6">
-                Deleting this Nest permanently removes its shared Moments,
-                Love Notes, plans, settings, and private media for both
-                partners. This cannot be undone.
+                Deleting this Nest permanently removes its shared Moments, Love
+                Notes, plans, settings, and private media for both partners.
+                This cannot be undone.
               </p>
               <form action={deleteNest} className="mt-5 grid max-w-xl gap-4">
                 <input type="hidden" name="nest_id" value={context.nest.id} />
@@ -257,8 +257,7 @@ export default async function Page({
             </>
           ) : (
             <p className="muted mt-3 text-sm">
-              Only the partner who created this Nest can permanently delete
-              it.
+              Only the partner who created this Nest can permanently delete it.
             </p>
           )}
         </section>

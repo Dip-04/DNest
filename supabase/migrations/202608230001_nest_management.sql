@@ -4,7 +4,7 @@
 
 create or replace function public.create_nest_invitation(
   p_nest_id uuid,
-  p_email citext default null
+  p_email public.citext default null
 ) returns text
 language plpgsql
 security definer
@@ -12,7 +12,7 @@ set search_path = ''
 as $$
 declare
   v_token text;
-  v_email citext;
+  v_email public.citext;
 begin
   if not app_private.is_nest_member(p_nest_id, auth.uid()) then
     raise exception 'forbidden';
@@ -21,7 +21,7 @@ begin
     raise exception 'nest is full';
   end if;
 
-  v_email := nullif(lower(trim(p_email::text)), '')::citext;
+  v_email := nullif(lower(trim(p_email::text)), '')::public.citext;
   update public.nest_invitations
     set status = 'revoked'
     where nest_id = p_nest_id and status = 'pending';
@@ -106,9 +106,9 @@ begin
 end;
 $$;
 
-revoke all on function public.create_nest_invitation(uuid, citext) from public, anon;
+revoke all on function public.create_nest_invitation(uuid, public.citext) from public, anon;
 revoke all on function public.accept_nest_invitation(text) from public, anon;
 revoke all on function public.delete_owned_nest(uuid) from public, anon;
-grant execute on function public.create_nest_invitation(uuid, citext) to authenticated;
+grant execute on function public.create_nest_invitation(uuid, public.citext) to authenticated;
 grant execute on function public.accept_nest_invitation(text) to authenticated;
 grant execute on function public.delete_owned_nest(uuid) to authenticated;
