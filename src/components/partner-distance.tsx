@@ -108,7 +108,7 @@ export function PartnerDistance({ initialMe, initialPartner }: {
       <BetweenUsMap me={mappedMe} partner={mappedPartner} />
       <div className="between-map-distance"><MapPin className="size-5 text-[var(--rose)]" /><span><strong>{distance?.toLocaleString() ?? "—"} km apart</strong><small>{partner.name}{partner.localTime ? ` · ${partner.localTime}` : ""}</small></span></div>
     </div>
-    <p className="muted px-5 py-3 text-center text-xs">Precise live positions update while DNest is open.{me.accuracy != null && partner.accuracy != null ? ` GPS accuracy: you ±${Math.round(me.accuracy)} m · ${partner.name} ±${Math.round(partner.accuracy)} m.` : ""} Map.</p>
+    <p className="muted px-5 py-3 text-center text-xs">Precise live positions update while DNest is open.{me.accuracy != null && partner.accuracy != null ? ` GPS accuracy: you ±${Math.round(me.accuracy)} m · ${partner.name} ±${Math.round(partner.accuracy)} m.` : ""}</p>
   </section>;
 }
 

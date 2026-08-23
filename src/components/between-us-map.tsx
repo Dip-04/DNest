@@ -34,9 +34,9 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
     void import("leaflet").then((L) => {
       if (disposed || !element.current) return;
       map = L.map(element.current, { zoomControl: true, attributionControl: true });
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer("", {
         maxZoom: 19,
-        attribution: "Not found",
+        attribution: "",
       }).addTo(map);
       const icon = (person: MapPerson, label: string, mine: boolean) =>
         L.divIcon({
