@@ -22,7 +22,6 @@ import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/types/database";
 import { PushSetup } from "@/components/push-setup";
 import { IPhonePwaInstall } from "@/components/iphone-pwa-install";
-import { NativeWidgetSetup } from "@/components/native-widget-setup";
 import { safeTimeZone } from "@/lib/date";
 const kinds = [
   ["love_note", "Love Notes"],
@@ -232,7 +231,6 @@ export default async function Page({
             Download my Nest data
           </Link>
         </section>
-        <NativeWidgetSetup />
         <section className="surface card border-red-300/40 lg:col-span-2">
           <Trash2 className="size-6 text-red-500" />
           <h2 className="display mt-5 text-3xl">Danger zone</h2>

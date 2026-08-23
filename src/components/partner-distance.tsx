@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 type PersonLocation = {
   id: string;
   name: string;
+  localTime?: string;
   latitude: number | null;
   longitude: number | null;
   locationSharing: boolean;
@@ -22,6 +23,68 @@ function hasLocation(person: PersonLocation) {
   );
 }
 
+function mapPresentation(me: PersonLocation, partner: PersonLocation) {
+  const meLatitude = me.latitude ?? 0;
+  const meLongitude = me.longitude ?? 0;
+  const partnerLatitude = partner.latitude ?? 0;
+  const partnerLongitude = partner.longitude ?? 0;
+  const latitudeSpan = Math.max(Math.abs(meLatitude - partnerLatitude), 0.02);
+  const longitudeSpan = Math.max(
+    Math.abs(meLongitude - partnerLongitude),
+    0.02,
+  );
+  const latitudePadding = latitudeSpan * 0.45;
+  const longitudePadding = longitudeSpan * 0.45;
+  const minLatitude = Math.min(meLatitude, partnerLatitude) - latitudePadding;
+  const maxLatitude = Math.max(meLatitude, partnerLatitude) + latitudePadding;
+  const minLongitude =
+    Math.min(meLongitude, partnerLongitude) - longitudePadding;
+  const maxLongitude =
+    Math.max(meLongitude, partnerLongitude) + longitudePadding;
+
+  const point = (latitude: number, longitude: number) => ({
+    x: ((longitude - minLongitude) / (maxLongitude - minLongitude)) * 100,
+    y: ((maxLatitude - latitude) / (maxLatitude - minLatitude)) * 100,
+  });
+  const mine = point(meLatitude, meLongitude);
+  const theirs = point(partnerLatitude, partnerLongitude);
+  const controlOne = {
+    x: mine.x + (theirs.x - mine.x) * 0.34,
+    y: Math.max(8, mine.y - 16),
+  };
+  const controlTwo = {
+    x: mine.x + (theirs.x - mine.x) * 0.66,
+    y: Math.min(92, theirs.y + 16),
+  };
+  const bbox = [minLongitude, minLatitude, maxLongitude, maxLatitude].join(",");
+
+  return {
+    me: mine,
+    partner: theirs,
+    route:
+      "M " +
+      mine.x +
+      " " +
+      mine.y +
+      " C " +
+      controlOne.x +
+      " " +
+      controlOne.y +
+      ", " +
+      controlTwo.x +
+      " " +
+      controlTwo.y +
+      ", " +
+      theirs.x +
+      " " +
+      theirs.y,
+    source:
+      "https://www.openstreetmap.org/export/embed.html?bbox=" +
+      encodeURIComponent(bbox) +
+      "&layer=mapnik",
+  };
+}
+
 export function PartnerDistance({
   initialMe,
   initialPartner,
@@ -32,6 +95,7 @@ export function PartnerDistance({
   const [me, setMe] = useState(initialMe);
   const [partner, setPartner] = useState(initialPartner);
   const distance = useMemo(() => distanceKm(me, partner), [me, partner]);
+  const map = useMemo(() => mapPresentation(me, partner), [me, partner]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -126,33 +190,57 @@ export function PartnerDistance({
         className="live-distance-map"
         aria-label="Map showing both partner locations"
       >
-        <div className="between-person">
-          <span className="between-avatar">
-            {me.name.slice(0, 1).toUpperCase()}
+        <iframe
+          className="between-map-frame"
+          src={map.source}
+          title="OpenStreetMap showing both partner locations"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          tabIndex={-1}
+        />
+        <div className="between-map-tint" aria-hidden />
+        <svg
+          className="between-map-route"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          <path d={map.route} />
+        </svg>
+        <div
+          className="between-map-person between-map-person-me"
+          style={{ left: map.me.x + "%", top: map.me.y + "%" }}
+        >
+          <span className="between-map-avatar" aria-hidden>
+            <span>👩</span>
           </span>
-          <strong>You</strong>
+          <Heart className="between-map-heart size-6 fill-current" />
+          <strong>Me</strong>
         </div>
-        <div className="between-route">
-          <svg viewBox="0 0 180 92" aria-hidden="true">
-            <path d="M10 16 C 55 5, 40 82, 90 50 S 132 12, 170 70" />
-          </svg>
-          <Heart className="between-heart between-heart-start size-5 fill-current" />
-          <Heart className="between-heart between-heart-end size-5 fill-current" />
-          <div className="between-distance">
-            <MapPin className="size-4" />
-            <strong>{distance?.toLocaleString() ?? "-"} km</strong>
-          </div>
-        </div>
-        <div className="between-person">
-          <span className="between-avatar between-avatar-partner">
-            {partner.name.slice(0, 1).toUpperCase()}
+        <div
+          className="between-map-person between-map-person-partner"
+          style={{ left: map.partner.x + "%", top: map.partner.y + "%" }}
+        >
+          <span className="between-map-avatar" aria-hidden>
+            <span>🧑</span>
           </span>
+          <Heart className="between-map-heart size-6 fill-current" />
           <strong>{partner.name}</strong>
+        </div>
+        <div className="between-map-distance">
+          <MapPin className="size-5 text-[var(--rose)]" />
+          <span>
+            <strong>{distance?.toLocaleString() ?? "-"} km apart</strong>
+            <small>
+              {partner.name}
+              {partner.localTime ? " · " + partner.localTime : ""}
+            </small>
+          </span>
         </div>
       </div>
       <p className="muted px-5 py-3 text-center text-xs">
-        Updates while DNest is open; the last location remains available when
-        closed.
+        Live in the DNest PWA while both partners share location. Map ©
+        OpenStreetMap contributors.
       </p>
     </section>
   );

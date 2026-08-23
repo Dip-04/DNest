@@ -125,6 +125,7 @@ export default async function Home({
           initialMe={{
             id: me.id,
             name: me.display_name,
+            localTime: formatLocalTime(me.timezone),
             latitude: me.latitude,
             longitude: me.longitude,
             locationSharing: me.location_sharing,
@@ -132,6 +133,7 @@ export default async function Home({
           initialPartner={{
             id: partner.id,
             name: partner.display_name,
+            localTime: formatLocalTime(partner.timezone),
             latitude: partner.latitude,
             longitude: partner.longitude,
             locationSharing: partner.location_sharing,

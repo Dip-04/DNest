@@ -8,7 +8,6 @@ export const privatePagePrefixes = [
   "/questions",
   "/notifications",
   "/settings",
-  "/connect-android",
   "/onboarding",
   "/reset-password",
 ] as const;
