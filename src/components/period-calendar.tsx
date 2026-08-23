@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Droplets, Sparkles, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { deletePeriodCycle, savePeriodCycle, savePeriodDayMood, togglePeriodDay } from "@/features/period-tracker/actions";
 import { addDays, type PeriodCycle } from "@/lib/period-tracker";
+import { formatCalendarDate } from "@/lib/date";
 
 type Prediction = { start: string; end: string; ovulation: string; fertileStart: string; fertileEnd: string };
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -42,7 +43,7 @@ export function PeriodCalendar({ cycles, predictions, today, defaultPeriodLength
         <button className="btn btn-secondary !px-3" type="button" onClick={() => move(-1)} aria-label="Previous month"><ChevronLeft /></button>
         <div className="text-center">
           <span className="eyebrow">Cycle calendar</span>
-          <h2 className="display mt-1 text-3xl">{new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" }).format(month)}</h2>
+          <h2 className="display mt-1 text-3xl">{formatCalendarDate(month.toISOString().slice(0, 10), { month: "long", year: "numeric" })}</h2>
           <button className="muted mt-1 text-xs underline" type="button" onClick={() => setMonth(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)))}>Current month</button>
         </div>
         <button className="btn btn-secondary !px-3" type="button" onClick={() => move(1)} aria-label="Next month"><ChevronRight /></button>
@@ -66,7 +67,7 @@ export function PeriodCalendar({ cycles, predictions, today, defaultPeriodLength
     {selected && <>
       <button className="mobile-more-backdrop" type="button" aria-label="Close date editor" onClick={() => setSelected(undefined)} />
       <section className="period-date-sheet surface" role="dialog" aria-modal="true" aria-label={`Edit ${selected}`}>
-        <header className="flex items-start justify-between gap-3"><div><span className="eyebrow">Selected date</span><h2 className="display mt-1 text-3xl">{new Intl.DateTimeFormat("en", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${selected}T00:00:00Z`))}</h2></div><button className="btn btn-secondary !px-3" type="button" onClick={() => setSelected(undefined)} aria-label="Close"><X /></button></header>
+        <header className="flex items-start justify-between gap-3"><div><span className="eyebrow">Selected date</span><h2 className="display mt-1 text-3xl">{formatCalendarDate(selected)}</h2></div><button className="btn btn-secondary !px-3" type="button" onClick={() => setSelected(undefined)} aria-label="Close"><X /></button></header>
         {readOnly ? <div className="muted mt-5 rounded-2xl bg-[var(--surface-muted)] p-4 text-sm">This tracker is shared with you as view-only.{moods.find((item) => item.local_date === selected) && <p className="mt-2 font-bold">Mood: {moods.find((item) => item.local_date === selected)?.mood}</p>}</div> : <>
         <form action={togglePeriodDay} className="mt-5"><input type="hidden" name="date" value={selected} /><button className="btn btn-secondary w-full"><Droplets className="size-4" />{selectedCycle ? "Remove this period day" : "Add this period day"}</button></form>
         <form action={savePeriodCycle} className="mt-5 grid gap-4">

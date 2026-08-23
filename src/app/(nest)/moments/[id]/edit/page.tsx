@@ -4,11 +4,11 @@ import { ArrowLeft, Save } from "lucide-react";
 import { updateMoment } from "@/features/shared/actions";
 import { ImageUploadField } from "@/components/image-upload-field";
 import { FormSubmitButton } from "@/components/form-submit-button";
-import { BrowserTimeZoneInput } from "@/components/browser-timezone-input";
+import { LocalDateTimeField } from "@/components/local-date-time-field";
 import { getNestContext } from "@/lib/nest";
 import { createClient } from "@/lib/supabase/server";
 import type { Moment } from "@/types/database";
-import { formatDateTimeInput, safeTimeZone } from "@/lib/date";
+import { safeTimeZone } from "@/lib/date";
 
 const categories = [
   "First Date",
@@ -79,7 +79,6 @@ export default async function EditMomentPage({
       >
         <input type="hidden" name="id" value={moment.id} />
         <input type="hidden" name="nest_id" value={context.nest.id} />
-        <BrowserTimeZoneInput fallback={safeTimeZone(moment.timezone)} />
         <label className="label">
           Title
           <input
@@ -93,14 +92,10 @@ export default async function EditMomentPage({
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="label">
             Date and time
-            <input
-              className="field"
+            <LocalDateTimeField
               name="moment_at"
-              type="datetime-local"
-              defaultValue={formatDateTimeInput(
-                moment.moment_at,
-                safeTimeZone(moment.timezone),
-              )}
+              value={moment.moment_at}
+              fallbackTimeZone={safeTimeZone(moment.timezone)}
               required
             />
           </label>

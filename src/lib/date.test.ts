@@ -3,9 +3,11 @@ import {
   countdown,
   daysTogether,
   distanceKm,
+  formatDateTimeInput,
   isValidTimeZone,
   safeTimeZone,
   yearsAgoOnThisDay,
+  zonedDateTimeToISOString,
 } from "@/lib/date";
 describe("relationship dates", () => {
   it("counts the first day", () =>
@@ -64,5 +66,25 @@ describe("timezones", () => {
     expect(isValidTimeZone("LTC")).toBe(false);
     expect(safeTimeZone("LTC")).toBe("UTC");
     expect(safeTimeZone("Asia/Kolkata")).toBe("Asia/Kolkata");
+  });
+  it("stores an India wall time as the correct UTC instant", () => {
+    expect(
+      zonedDateTimeToISOString("2026-08-24T19:05", "Asia/Kolkata"),
+    ).toBe("2026-08-24T13:35:00.000Z");
+  });
+  it("stores and restores a North American wall time", () => {
+    const stored = zonedDateTimeToISOString(
+      "2026-08-24T19:05",
+      "America/New_York",
+    );
+    expect(stored).toBe("2026-08-24T23:05:00.000Z");
+    expect(formatDateTimeInput(stored, "America/New_York")).toBe(
+      "2026-08-24T19:05",
+    );
+  });
+  it("rejects a wall time skipped by daylight saving", () => {
+    expect(() =>
+      zonedDateTimeToISOString("2026-03-08T02:30", "America/New_York"),
+    ).toThrow();
   });
 });

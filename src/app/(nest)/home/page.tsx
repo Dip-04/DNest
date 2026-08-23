@@ -87,8 +87,11 @@ export default async function Home({
   const meetup = meetups?.[0];
   const recent = (moments ?? []) as Moment[];
   const onThisDay = recent.find((moment) =>
-    yearsAgoOnThisDay(moment.moment_at),
+    yearsAgoOnThisDay(moment.moment_at, new Date(), moment.timezone),
   );
+  const onThisDayYears = onThisDay
+    ? yearsAgoOnThisDay(onThisDay.moment_at, new Date(), onThisDay.timezone)
+    : null;
   const query = await searchParams;
   const greeting = new Intl.DateTimeFormat("en", {
     timeZone: myTimeZone,
@@ -184,6 +187,8 @@ export default async function Home({
               <strong className="display text-3xl">
                 {daysTogether(
                   context.nest.relationship_start,
+                  new Date(),
+                  myTimeZone,
                 )?.toLocaleString() ?? "—"}
               </strong>
               <p className="muted text-xs">days together</p>
@@ -274,7 +279,7 @@ export default async function Home({
           </div>
           <div className="flex-1">
             <span className="eyebrow">
-              On this day · {yearsAgoOnThisDay(onThisDay.moment_at)} years ago
+              On this day · {onThisDayYears} years ago
             </span>
             <h2 className="display mt-2 text-3xl">{onThisDay.title}</h2>
             <p className="muted mt-1 line-clamp-2">{onThisDay.story}</p>

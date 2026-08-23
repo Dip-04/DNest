@@ -1,15 +1,17 @@
 const DAY_MS = 86_400_000;
-export function daysTogether(start: string | null, now = new Date()) {
+export function daysTogether(
+  start: string | null,
+  now = new Date(),
+  timezone = "UTC",
+) {
   if (!start) return null;
-  const startDate = new Date(`${start}T00:00:00Z`);
-  if (Number.isNaN(startDate.getTime()) || startDate > now) return 0;
-  return (
-    Math.floor(
-      (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
-        startDate.getTime()) /
-        DAY_MS,
-    ) + 1
-  );
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(start);
+  if (!match) return 0;
+  const startDay = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const localNow = partsInTimeZone(now, timezone);
+  const today = Date.UTC(localNow.year, localNow.month - 1, localNow.day);
+  if (startDay > today) return 0;
+  return Math.floor((today - startDay) / DAY_MS) + 1;
 }
 export function countdown(target: string, now = new Date()) {
   const diff = Math.max(0, new Date(target).getTime() - now.getTime());
@@ -21,14 +23,19 @@ export function countdown(target: string, now = new Date()) {
     isPast: new Date(target).getTime() <= now.getTime(),
   };
 }
-export function yearsAgoOnThisDay(iso: string, now = new Date()) {
-  const date = new Date(iso);
+export function yearsAgoOnThisDay(
+  iso: string,
+  now = new Date(),
+  timezone = "UTC",
+) {
+  const date = partsInTimeZone(new Date(iso), timezone);
+  const localNow = partsInTimeZone(now, timezone);
   if (
-    date.getUTCMonth() !== now.getUTCMonth() ||
-    date.getUTCDate() !== now.getUTCDate()
+    date.month !== localNow.month ||
+    date.day !== localNow.day
   )
     return null;
-  const years = now.getUTCFullYear() - date.getUTCFullYear();
+  const years = localNow.year - date.year;
   return years > 0 ? years : null;
 }
 export function distanceKm(

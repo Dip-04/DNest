@@ -72,7 +72,7 @@ export default async function Page({
         .order("event_date"),
     ]);
   const stats = [
-    [daysTogether(context.nest.relationship_start) ?? 0, "Days together"],
+    [daysTogether(context.nest.relationship_start, new Date(), myTimeZone) ?? 0, "Days together"],
     [moments.count ?? 0, "Moments saved"],
     [
       new Set(
