@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,7 +16,7 @@ import java.net.URL;
 
 final class MapWidgetRenderer {
     private static final int WIDTH = 480;
-    private static final int HEIGHT = 220;
+    private static final int HEIGHT = 300;
     private static final int TILE_SIZE = 256;
     private static final long MAX_TILE_AGE_MS = 7L * 24 * 60 * 60 * 1000;
 
@@ -89,42 +90,104 @@ final class MapWidgetRenderer {
         );
         canvas.drawPath(route, paint);
 
-        drawPin(canvas, paint, meX, meY, me.name(), Color.rgb(238, 101, 139));
-        drawPin(canvas, paint, partnerX, partnerY, partner.name(), Color.rgb(169, 95, 105));
+        drawHeartPin(canvas, paint, meX, meY);
+        drawHeartPin(canvas, paint, partnerX, partnerY);
+        drawAvatar(
+                canvas,
+                paint,
+                meX - 34,
+                meY - 48,
+                me.name(),
+                Color.rgb(249, 201, 213),
+                true
+        );
+        drawAvatar(
+                canvas,
+                paint,
+                partnerX + 34,
+                partnerY + 48,
+                partner.name(),
+                Color.rgb(199, 216, 242),
+                false
+        );
+
+        String distance = state.distanceKm() == null
+                ? "Waiting for locations"
+                : state.distanceKm() + " km apart";
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.argb(220, 255, 255, 255));
+        canvas.drawRoundRect(WIDTH / 2f - 88, HEIGHT - 52, WIDTH / 2f + 88, HEIGHT - 12, 20, 20, paint);
+        paint.setColor(Color.rgb(54, 43, 50));
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(21);
+        paint.setFakeBoldText(true);
+        canvas.drawText(distance, WIDTH / 2f, HEIGHT - 25, paint);
+        paint.setFakeBoldText(false);
 
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.argb(190, 255, 255, 255));
-        canvas.drawRoundRect(6, HEIGHT - 28, 142, HEIGHT - 5, 8, 8, paint);
+        canvas.drawRoundRect(6, HEIGHT - 24, 126, HEIGHT - 5, 8, 8, paint);
         paint.setColor(Color.rgb(70, 70, 70));
-        paint.setTextSize(15);
+        paint.setTextSize(12);
         paint.setTextAlign(Paint.Align.LEFT);
-        canvas.drawText("© OpenStreetMap", 12, HEIGHT - 11, paint);
+        canvas.drawText("© OpenStreetMap", 10, HEIGHT - 10, paint);
         return result;
     }
 
-    private static void drawPin(
+    private static void drawHeartPin(
+            Canvas canvas,
+            Paint paint,
+            float x,
+            float y
+    ) {
+        float safeX = Math.max(18, Math.min(WIDTH - 18, x));
+        float safeY = Math.max(18, Math.min(HEIGHT - 18, y));
+        Path heart = new Path();
+        heart.moveTo(safeX, safeY + 14);
+        heart.cubicTo(safeX - 25, safeY, safeX - 13, safeY - 19, safeX, safeY - 7);
+        heart.cubicTo(safeX + 13, safeY - 19, safeX + 25, safeY, safeX, safeY + 14);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.rgb(237, 99, 134));
+        canvas.drawPath(heart, paint);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3);
+        paint.setColor(Color.WHITE);
+        canvas.drawPath(heart, paint);
+    }
+
+    private static void drawAvatar(
             Canvas canvas,
             Paint paint,
             float x,
             float y,
             String name,
-            int color
+            int background,
+            boolean longHair
     ) {
-        float safeX = Math.max(24, Math.min(WIDTH - 24, x));
-        float safeY = Math.max(24, Math.min(HEIGHT - 24, y));
+        float safeX = Math.max(38, Math.min(WIDTH - 38, x));
+        float safeY = Math.max(42, Math.min(HEIGHT - 70, y));
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.WHITE);
-        canvas.drawCircle(safeX, safeY, 23, paint);
-        paint.setColor(color);
-        canvas.drawCircle(safeX, safeY, 19, paint);
-        paint.setColor(Color.WHITE);
+        canvas.drawCircle(safeX, safeY, 34, paint);
+        paint.setColor(background);
+        canvas.drawCircle(safeX, safeY, 30, paint);
+
+        paint.setColor(longHair ? Color.rgb(83, 54, 52) : Color.rgb(42, 46, 58));
+        RectF hair = new RectF(safeX - 19, safeY - 22, safeX + 19, safeY + 18);
+        canvas.drawOval(hair, paint);
+        paint.setColor(Color.rgb(244, 193, 158));
+        canvas.drawCircle(safeX, safeY - 2, 14, paint);
+        if (!longHair) {
+            paint.setColor(Color.rgb(42, 46, 58));
+            canvas.drawArc(new RectF(safeX - 15, safeY - 17, safeX + 15, safeY + 4), 180, 180, true, paint);
+        }
+
+        paint.setColor(Color.rgb(56, 43, 50));
         paint.setTextAlign(Paint.Align.CENTER);
-        paint.setTextSize(18);
+        paint.setTextSize(13);
         paint.setFakeBoldText(true);
-        String initial = name == null || name.isEmpty()
-                ? "?"
-                : name.substring(0, 1).toUpperCase();
-        canvas.drawText(initial, safeX, safeY + 6, paint);
+        String label = name == null || name.isEmpty() ? "Partner" : name;
+        canvas.drawText(label, safeX, safeY + 48, paint);
         paint.setFakeBoldText(false);
     }
 
