@@ -18,9 +18,11 @@
         android:textStyle="bold" />
 
     <ImageView
+        android:id="@+id/widget_map"
         android:layout_width="match_parent"
-        android:layout_height="42dp"
+        android:layout_height="76dp"
         android:contentDescription="@string/route_between_partners"
+        android:scaleType="centerCrop"
         android:src="@drawable/route_line" />
 
     <TextView
@@ -43,4 +45,3 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 </LinearLayout>
-

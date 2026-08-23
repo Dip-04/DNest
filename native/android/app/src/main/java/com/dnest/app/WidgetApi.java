@@ -13,7 +13,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 final class WidgetApi {
-    record Person(String name, String localTime) {}
+    record Person(String name, String localTime, Double latitude, Double longitude) {}
     record State(boolean sharing, Integer distanceKm, Person me, Person partner) {}
 
     private WidgetApi() {}
@@ -51,7 +51,17 @@ final class WidgetApi {
     }
 
     private static Person person(JSONObject value) {
-        return new Person(value.optString("name", "Partner"), value.optString("localTime", ""));
+        JSONObject location = value.optJSONObject("location");
+        Double latitude = location == null || location.isNull("latitude")
+                ? null : location.optDouble("latitude");
+        Double longitude = location == null || location.isNull("longitude")
+                ? null : location.optDouble("longitude");
+        return new Person(
+                value.optString("name", "Partner"),
+                value.optString("localTime", ""),
+                latitude,
+                longitude
+        );
     }
 
     private static HttpURLConnection open(Context context, String method) throws Exception {
@@ -77,4 +87,3 @@ final class WidgetApi {
         return value.toString();
     }
 }
-

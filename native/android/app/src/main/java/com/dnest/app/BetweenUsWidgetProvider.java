@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
@@ -37,9 +38,10 @@ public final class BetweenUsWidgetProvider extends AppWidgetProvider {
         int[] ids = manager.getAppWidgetIds(new ComponentName(context, BetweenUsWidgetProvider.class));
         for (int id : ids) {
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.between_us_widget);
+            views.setImageViewResource(R.id.widget_map, R.drawable.route_line);
             if (state == null) {
                 views.setTextViewText(R.id.widget_title, "Between Us");
-                views.setTextViewText(R.id.widget_people, "Open DNest to connect");
+                views.setTextViewText(R.id.widget_people, "Tap here, then connect in DNest Settings");
                 views.setTextViewText(R.id.widget_distance, "—");
             } else {
                 String partner = state.partner() == null ? "Your partner" : state.partner().name();
@@ -51,6 +53,8 @@ public final class BetweenUsWidgetProvider extends AppWidgetProvider {
                         state.sharing() && state.distanceKm() != null
                                 ? state.distanceKm() + " km apart"
                                 : "Waiting for both locations");
+                Bitmap map = MapWidgetRenderer.render(context, state);
+                if (map != null) views.setImageViewBitmap(R.id.widget_map, map);
             }
             views.setOnClickPendingIntent(R.id.widget_root, homeIntent(context));
             manager.updateAppWidget(id, views);
@@ -70,4 +74,3 @@ public final class BetweenUsWidgetProvider extends AppWidgetProvider {
         );
     }
 }
-
