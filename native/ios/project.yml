@@ -1,0 +1,46 @@
+name: DNest
+options:
+  bundleIdPrefix: com.dnest
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: 6.0
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  DNest:
+    type: application
+    platform: iOS
+    sources:
+      - path: DNest
+      - path: Shared
+    info:
+      path: DNest/Info.plist
+    entitlements:
+      path: DNest/DNest.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dnest.app
+        PRODUCT_NAME: DNest
+        INFOPLIST_KEY_CFBundleDisplayName: DNest
+    dependencies:
+      - target: DNestWidgets
+        embed: true
+  DNestWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: DNestWidgets
+      - path: Shared
+    info:
+      path: DNestWidgets/Info.plist
+    entitlements:
+      path: DNestWidgets/DNestWidgets.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dnest.app.widgets
+        PRODUCT_NAME: DNestWidgets
+        SKIP_INSTALL: true
+        APPLICATION_EXTENSION_API_ONLY: true
+

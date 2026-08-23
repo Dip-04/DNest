@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DNest</string>
+    <string name="widget_description">Live distance and local time between partners</string>
+    <string name="route_between_partners">A route connecting both partners</string>
+</resources>
+

@@ -1,0 +1,14 @@
+com.dnest.app
+drawable ic_heart_pin
+drawable route_line
+drawable widget_background
+id widget_distance
+id widget_people
+id widget_root
+id widget_title
+layout between_us_widget
+string app_name
+string route_between_partners
+string widget_description
+style Theme_DNest
+xml between_us_widget_info
