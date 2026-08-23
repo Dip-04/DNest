@@ -30,10 +30,12 @@ export function PushSetup() {
         return;
       }
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: decode(key),
-      });
+      const subscription =
+        (await registration.pushManager.getSubscription()) ??
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: decode(key),
+        }));
       const response = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "content-type": "application/json" },

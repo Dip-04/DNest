@@ -46,7 +46,7 @@ export default async function Home({
     { data: meetups },
     { data: moods },
     { data: moments },
-    { data: notifications },
+    { count: unreadCount },
   ] = await Promise.all([
     supabase
       .from("meetups")
@@ -107,7 +107,7 @@ export default async function Home({
         >
           <Heart className="size-5" />
           <span className="sr-only">Unread notifications</span>
-          {notifications && (
+          {(unreadCount ?? 0) > 0 && (
             <span className="size-2 rounded-full bg-[var(--rose)]" />
           )}
         </Link>

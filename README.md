@@ -121,4 +121,4 @@ See `SECURITY.md`. Supabase Auth establishes identity; RLS checks active Nest me
 - Web Push delivery requires VAPID keys and a scheduler.
 - Email quality and sender branding depend on the SMTP provider configured in Supabase Auth.
 - Legal counsel must review the public Privacy and Terms pages and add the production operator’s legal details before launch.
-- Account/Nest deletion requires a reviewed shared-content retention workflow rather than silently deleting a partner’s archive.
+- Nest deletion is creator-only, requires exact-name and browser confirmation, removes Nest-prefixed private Storage objects through the server-only service role, and then invokes an owner-checked database RPC. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only in every deployment.

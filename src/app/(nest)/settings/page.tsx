@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { LocationFields } from "@/components/location-fields";
 import {
   createInvite,
   deleteNest,
@@ -126,10 +127,11 @@ export default async function Page({
               required
             />
           </label>
-          <label className="label">
-            City <span className="font-normal">(optional and private)</span>
-            <input className="field" name="city" defaultValue={me.city ?? ""} />
-          </label>
+          <LocationFields
+            defaultCity={me.city ?? ""}
+            defaultLatitude={me.latitude}
+            defaultLongitude={me.longitude}
+          />
           <button className="btn btn-primary">Save profile</button>
         </form>
         <section className="surface card">

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyPartner } from "@/lib/partner-notifications";
 import {
   acceptInviteSchema,
   answerSchema,
@@ -80,7 +81,7 @@ export async function createInvite(form: FormData) {
 export async function updateNest(form: FormData) {
   const parsed = nestUpdateSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/settings", firstIssue(parsed.error));
-  const { supabase } = await auth();
+  const { supabase, user } = await auth();
   const { data, error } = await supabase
     .from("nests")
     .update({
@@ -92,6 +93,14 @@ export async function updateNest(form: FormData) {
     .maybeSingle();
   if (error || !data)
     fail("/settings", "We could not update your Nest. Please try again.");
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "moment",
+    title: "Nest details updated",
+    body: "Your partner updated your shared Nest.",
+    targetPath: "/settings",
+  });
   revalidatePath("/", "layout");
   succeed("/settings", "Your Nest details were updated.");
 }
@@ -195,8 +204,8 @@ export async function deleteNest(form: FormData) {
 export async function acceptInvite(form: FormData) {
   const parsed = acceptInviteSchema.safeParse(form.get("token"));
   if (!parsed.success) fail("/onboarding", firstIssue(parsed.error));
-  const { supabase } = await auth();
-  const { error } = await supabase.rpc("accept_nest_invitation", {
+  const { supabase, user } = await auth();
+  const { data: nestId, error } = await supabase.rpc("accept_nest_invitation", {
     p_token: parsed.data,
   });
   if (error)
@@ -204,6 +213,14 @@ export async function acceptInvite(form: FormData) {
       "/onboarding",
       "That invitation is invalid, expired, or the Nest is already full.",
     );
+  await notifyPartner({
+    nestId: String(nestId),
+    actorId: user.id,
+    kind: "moment",
+    title: "Your Nest is complete",
+    body: "Your partner joined your private Nest.",
+    targetPath: "/home",
+  });
   succeed("/home", "You joined your private Nest.");
 }
 export async function createMoment(form: FormData) {
@@ -271,6 +288,14 @@ export async function createMoment(form: FormData) {
       fail("/moments/new", "A photo could not be attached. Please try again.");
     }
   }
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "moment",
+    title: "A new Moment",
+    body: "Your partner added something to your shared memories.",
+    targetPath: "/moments",
+  });
   revalidatePath("/moments");
   revalidatePath("/home");
   succeed("/moments", "Your Moment was saved safely.");
@@ -280,7 +305,7 @@ export async function updateMoment(form: FormData) {
   const parsed = momentSchema.safeParse(Object.fromEntries(form));
   if (!id.success || !parsed.success)
     fail("/moments", "Check the Moment and try again.");
-  const { supabase } = await auth();
+  const { supabase, user } = await auth();
   const { data: updated, error } = await supabase
     .from("moments")
     .update({
@@ -297,6 +322,14 @@ export async function updateMoment(form: FormData) {
     .select("id")
     .maybeSingle();
   if (error || !updated) fail("/moments", "That Moment could not be updated.");
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "moment",
+    title: "A Moment was updated",
+    body: "Your partner updated one of your shared memories.",
+    targetPath: "/moments",
+  });
   revalidatePath("/moments");
   revalidatePath("/home");
   succeed("/moments", "Your Moment was updated.");
@@ -304,7 +337,7 @@ export async function updateMoment(form: FormData) {
 export async function deleteMoment(form: FormData) {
   const id = uuid.safeParse(form.get("id"));
   if (!id.success) fail("/moments", "That Moment could not be identified.");
-  const { supabase } = await auth();
+  const { supabase, user } = await auth();
   const { data: media } = await supabase
     .from("moment_media")
     .select("storage_path")
@@ -313,13 +346,21 @@ export async function deleteMoment(form: FormData) {
     .from("moments")
     .delete()
     .eq("id", id.data)
-    .select("id")
+    .select("id,nest_id")
     .maybeSingle();
   if (error || !deleted) fail("/moments", "That Moment could not be removed.");
   const paths = (media ?? []).map(({ storage_path }) => storage_path);
   if (paths.length > 0) {
     await supabase.storage.from("moment-media").remove(paths);
   }
+  await notifyPartner({
+    nestId: deleted.nest_id,
+    actorId: user.id,
+    kind: "moment",
+    title: "A Moment was removed",
+    body: "Your partner removed an item from your shared memories.",
+    targetPath: "/moments",
+  });
   revalidatePath("/moments");
   revalidatePath("/home");
   succeed("/moments", "The Moment was removed.");
@@ -344,13 +385,21 @@ export async function setMood(form: FormData) {
     { onConflict: "user_id,local_date" },
   );
   if (error) fail("/home", "Your mood couldn’t be saved.");
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "mood",
+    title: "A mood update",
+    body: "Your partner shared how they are feeling today.",
+    targetPath: "/home",
+  });
   revalidatePath("/home");
   succeed("/home", "Today’s mood was saved.");
 }
 export async function thinkOfPartner(form: FormData) {
   const nestId = uuid.safeParse(form.get("nest_id"));
   if (!nestId.success) fail("/home", "That Nest could not be identified.");
-  const { supabase } = await auth();
+  const { supabase, user } = await auth();
   const { error } = await supabase.rpc("send_thinking_of_you", {
     p_nest_id: nestId.data,
   });
@@ -359,6 +408,15 @@ export async function thinkOfPartner(form: FormData) {
       "/home",
       "That signal couldn’t be sent yet. Wait a moment and try again.",
     );
+  await notifyPartner({
+    nestId: nestId.data,
+    actorId: user.id,
+    kind: "thinking_of_you",
+    title: "Thinking of you",
+    body: "Your partner is thinking about you.",
+    targetPath: "/home",
+    createInApp: false,
+  });
   succeed("/home", "Sent with love.");
 }
 export async function createNote(form: FormData) {
@@ -379,6 +437,16 @@ export async function createNote(form: FormData) {
     delivered_at: scheduled ? null : new Date().toISOString(),
   });
   if (error) fail("/notes", "Your note couldn’t be saved. Please try again.");
+  if (!scheduled) {
+    await notifyPartner({
+      nestId: parsed.data.nest_id,
+      actorId: user.id,
+      kind: "love_note",
+      title: "A Love Note is waiting",
+      body: "Your partner left something for you.",
+      targetPath: "/notes",
+    });
+  }
   revalidatePath("/notes");
   succeed(
     "/notes",
@@ -397,6 +465,14 @@ export async function createMeetup(form: FormData) {
     created_by: user.id,
   });
   if (error) fail("/plans", "The meetup couldn’t be saved.");
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "meetup",
+    title: "A meetup was added",
+    body: "Your partner added a plan for your next hello.",
+    targetPath: "/plans",
+  });
   revalidatePath("/plans");
   succeed("/plans", "Your next hello was added.");
 }
@@ -408,6 +484,14 @@ export async function createWishlistItem(form: FormData) {
     .from("wishlist_items")
     .insert({ ...parsed.data, created_by: user.id });
   if (error) fail("/plans", "That dream couldn’t be saved.");
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "wishlist",
+    title: "A new shared dream",
+    body: "Your partner added something to your couple wishlist.",
+    targetPath: "/plans",
+  });
   revalidatePath("/plans");
   succeed("/plans", "Added to your couple wishlist.");
 }
@@ -425,6 +509,14 @@ export async function createCapsule(form: FormData) {
     strict_lock: true,
   });
   if (error) fail("/us", "The capsule couldn’t be sealed.");
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "capsule",
+    title: "A Time Capsule was added",
+    body: "Your partner sealed something for the future.",
+    targetPath: "/us",
+  });
   revalidatePath("/us");
   succeed("/us", "Your Time Capsule is sealed until its unlock date.");
 }
@@ -441,6 +533,14 @@ export async function answerQuestion(form: FormData) {
     { onConflict: "nest_id,local_date,user_id" },
   );
   if (error) fail("/questions", "Your answer couldn’t be saved.");
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "question_unlocked",
+    title: "Your partner answered",
+    body: "Your daily question is waiting for your answer.",
+    targetPath: "/questions",
+  });
   revalidatePath("/questions");
   succeed(
     "/questions",
@@ -470,6 +570,14 @@ export async function saveDateIdea(form: FormData) {
     .from("saved_date_ideas")
     .upsert({ nest_id: nestId.data, idea_id: ideaId.data, saved_by: user.id });
   if (error) fail("/together", "The date idea couldn’t be saved.");
+  await notifyPartner({
+    nestId: nestId.data,
+    actorId: user.id,
+    kind: "wishlist",
+    title: "A date idea was saved",
+    body: "Your partner saved a new idea for the two of you.",
+    targetPath: "/together",
+  });
   revalidatePath("/together");
   succeed("/together", "Date idea saved for the two of you.");
 }
@@ -486,6 +594,14 @@ export async function startChallenge(form: FormData) {
     starts_on: new Date().toISOString().slice(0, 10),
   });
   if (error) fail("/together", "The challenge couldn’t be started.");
+  await notifyPartner({
+    nestId: nestId.data,
+    actorId: user.id,
+    kind: "challenge",
+    title: "A couple challenge started",
+    body: "Your partner started a challenge for the two of you.",
+    targetPath: "/together",
+  });
   revalidatePath("/together");
   succeed("/together", "Your couple challenge has started.");
 }
@@ -506,6 +622,14 @@ export async function createMeetupTask(form: FormData) {
     category: String(form.get("category") ?? "Custom").slice(0, 40),
   });
   if (error) fail("/plans", "The checklist item couldn’t be added.");
+  await notifyPartner({
+    nestId: nestId.data,
+    actorId: user.id,
+    kind: "meetup",
+    title: "A checklist item was added",
+    body: "Your partner updated your shared meetup checklist.",
+    targetPath: "/plans",
+  });
   revalidatePath("/plans");
   succeed("/plans", "Checklist item added.");
 }
@@ -514,12 +638,27 @@ export async function toggleMeetupTask(form: FormData) {
   if (!id.success)
     fail("/plans", "That checklist item could not be identified.");
   const completed = form.get("completed") !== "true";
-  const { supabase } = await auth();
+  const { supabase, user } = await auth();
+  const { data: task } = await supabase
+    .from("meetup_tasks")
+    .select("nest_id")
+    .eq("id", id.data)
+    .maybeSingle();
   const { error } = await supabase
     .from("meetup_tasks")
     .update({ completed })
     .eq("id", id.data);
   if (error) fail("/plans", "The checklist item couldn’t be updated.");
+  if (task) {
+    await notifyPartner({
+      nestId: task.nest_id,
+      actorId: user.id,
+      kind: "meetup",
+      title: "Meetup checklist updated",
+      body: "Your partner updated your shared meetup checklist.",
+      targetPath: "/plans",
+    });
+  }
   revalidatePath("/plans");
   succeed(
     "/plans",
@@ -531,12 +670,27 @@ export async function updateWishlistStatus(form: FormData) {
   const status = String(form.get("status"));
   if (!id.success || !["dream", "planning", "done"].includes(status))
     fail("/plans", "Choose a valid wishlist status.");
-  const { supabase } = await auth();
+  const { supabase, user } = await auth();
+  const { data: item } = await supabase
+    .from("wishlist_items")
+    .select("nest_id")
+    .eq("id", id.data)
+    .maybeSingle();
   const { error } = await supabase
     .from("wishlist_items")
     .update({ status })
     .eq("id", id.data);
   if (error) fail("/plans", "The wishlist item couldn’t be updated.");
+  if (item) {
+    await notifyPartner({
+      nestId: item.nest_id,
+      actorId: user.id,
+      kind: "wishlist",
+      title: "Wishlist updated",
+      body: "Your partner updated one of your shared dreams.",
+      targetPath: "/plans",
+    });
+  }
   revalidatePath("/plans");
   succeed("/plans", "Wishlist status updated.");
 }
@@ -544,12 +698,27 @@ export async function convertWishlist(form: FormData) {
   const id = uuid.safeParse(form.get("id"));
   if (!id.success)
     fail("/plans", "That wishlist item could not be identified.");
-  const { supabase } = await auth();
+  const { supabase, user } = await auth();
+  const { data: item } = await supabase
+    .from("wishlist_items")
+    .select("nest_id")
+    .eq("id", id.data)
+    .maybeSingle();
   const { error } = await supabase.rpc("convert_wishlist_to_moment", {
     p_item_id: id.data,
     p_moment_at: new Date().toISOString(),
   });
   if (error) fail("/plans", "That dream couldn’t be turned into a Moment.");
+  if (item) {
+    await notifyPartner({
+      nestId: item.nest_id,
+      actorId: user.id,
+      kind: "moment",
+      title: "A shared dream became a Moment",
+      body: "Your partner added a completed dream to your memories.",
+      targetPath: "/moments",
+    });
+  }
   revalidatePath("/plans");
   revalidatePath("/moments");
   succeed("/moments", "Your completed dream is now a Moment.");
@@ -597,6 +766,14 @@ export async function createImportantDate(form: FormData) {
     recurring_yearly: form.get("recurring_yearly") === "on",
   });
   if (error) fail("/us", "That important date couldn’t be saved.");
+  await notifyPartner({
+    nestId: nestId.data,
+    actorId: user.id,
+    kind: "important_date",
+    title: "An important date was added",
+    body: "Your partner added a date to remember together.",
+    targetPath: "/us",
+  });
   revalidatePath("/us");
   succeed("/us", "Important date saved.");
 }
@@ -610,14 +787,49 @@ export async function updateProfile(form: FormData) {
       .trim()
       .slice(0, 100) || null;
   const birthday = String(form.get("birthday") ?? "") || null;
+  const latitudeValue = String(form.get("latitude") ?? "").trim();
+  const longitudeValue = String(form.get("longitude") ?? "").trim();
+  const latitude = latitudeValue ? Number(latitudeValue) : null;
+  const longitude = longitudeValue ? Number(longitudeValue) : null;
   if (name.length < 2)
     fail("/settings", "Your name needs at least two characters.");
+  if (
+    (latitude == null) !== (longitude == null) ||
+    (latitude != null &&
+      (!Number.isFinite(latitude) || Math.abs(latitude) > 90)) ||
+    (longitude != null &&
+      (!Number.isFinite(longitude) || Math.abs(longitude) > 180))
+  )
+    fail("/settings", "Capture a valid location and try again.");
   const { supabase, user } = await auth();
   const { error } = await supabase
     .from("profiles")
-    .update({ display_name: name, timezone, city, birthday })
+    .update({
+      display_name: name,
+      timezone,
+      city,
+      birthday,
+      latitude,
+      longitude,
+    })
     .eq("id", user.id);
   if (error) fail("/settings", "Your profile couldn’t be updated.");
-  revalidatePath("/home");
+  const { data: membership } = await supabase
+    .from("nest_members")
+    .select("nest_id")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (membership) {
+    await notifyPartner({
+      nestId: membership.nest_id,
+      actorId: user.id,
+      kind: "moment",
+      title: "Partner profile updated",
+      body: "Your partner updated their profile in your Nest.",
+      targetPath: "/home",
+    });
+  }
+  revalidatePath("/", "layout");
   succeed("/settings", "Profile saved.");
 }
