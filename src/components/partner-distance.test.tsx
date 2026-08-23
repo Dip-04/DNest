@@ -32,6 +32,7 @@ const me = {
 const partner = {
   id: "partner",
   name: "Partner",
+  localTime: "1:18 PM",
   latitude: 28.6139,
   longitude: 77.209,
   locationSharing: true,
@@ -67,5 +68,12 @@ describe("partner distance status", () => {
     expect(
       screen.getByLabelText("Map showing both partner locations"),
     ).toBeVisible();
+    expect(
+      screen.getByTitle("OpenStreetMap showing both partner locations"),
+    ).toHaveAttribute(
+      "src",
+      expect.stringContaining("openstreetmap.org/export/embed.html"),
+    );
+    expect(screen.getByText("Partner · 1:18 PM")).toBeVisible();
   });
 });

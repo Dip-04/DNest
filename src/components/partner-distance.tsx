@@ -211,9 +211,10 @@ export function PartnerDistance({
           className="between-map-person between-map-person-me"
           style={{ left: map.me.x + "%", top: map.me.y + "%" }}
         >
-          <span className="between-map-avatar" aria-hidden>
-            <span>👩</span>
-          </span>
+          <span
+            className="between-map-avatar between-map-avatar-me"
+            aria-hidden
+          />
           <Heart className="between-map-heart size-6 fill-current" />
           <strong>Me</strong>
         </div>
@@ -221,9 +222,10 @@ export function PartnerDistance({
           className="between-map-person between-map-person-partner"
           style={{ left: map.partner.x + "%", top: map.partner.y + "%" }}
         >
-          <span className="between-map-avatar" aria-hidden>
-            <span>🧑</span>
-          </span>
+          <span
+            className="between-map-avatar between-map-avatar-partner"
+            aria-hidden
+          />
           <Heart className="between-map-heart size-6 fill-current" />
           <strong>{partner.name}</strong>
         </div>
