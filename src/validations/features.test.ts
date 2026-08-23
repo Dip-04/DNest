@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { momentSchema, noteSchema } from "@/validations/features";
+import {
+  momentSchema,
+  nestDeleteSchema,
+  nestUpdateSchema,
+  noteSchema,
+} from "@/validations/features";
 const id = "018f3f13-c112-7bc1-9bac-5fbdaf62c001";
 describe("moment validation", () => {
   it("rejects oversized stories", () =>
@@ -35,5 +40,21 @@ describe("note validation", () => {
         theme: "Love",
         deliver_at: "",
       }).success,
+    ).toBe(false));
+});
+
+describe("Nest management validation", () => {
+  it("accepts editable Nest details", () =>
+    expect(
+      nestUpdateSchema.safeParse({
+        nest_id: id,
+        name: "Our Place",
+        relationship_start: "2024-02-14",
+      }).success,
+    ).toBe(true));
+
+  it("requires confirmation before deletion", () =>
+    expect(
+      nestDeleteSchema.safeParse({ nest_id: id, confirmation: "" }).success,
     ).toBe(false));
 });
