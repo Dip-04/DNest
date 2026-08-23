@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import { updateMoment } from "@/features/shared/actions";
 import { ImageUploadField } from "@/components/image-upload-field";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { getNestContext } from "@/lib/nest";
 import { createClient } from "@/lib/supabase/server";
 import type { Moment } from "@/types/database";
@@ -152,10 +153,10 @@ export default async function EditMomentPage({
           </label>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button className="btn btn-primary" type="submit">
+          <FormSubmitButton pendingLabel="Saving changes…">
             <Save className="size-4" />
             Save Changes
-          </button>
+          </FormSubmitButton>
           <Link className="btn btn-secondary" href="/moments">
             Cancel
           </Link>

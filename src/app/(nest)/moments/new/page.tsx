@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ImageUploadField } from "@/components/image-upload-field";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import { createMoment } from "@/features/shared/actions";
 import { getNestContext } from "@/lib/nest";
 export default async function Page({
@@ -116,9 +117,9 @@ export default async function Page({
           </label>
         </div>
         <ImageUploadField name="photos" label="Moment image (optional)" />
-        <button className="btn btn-primary" type="submit">
+        <FormSubmitButton pendingLabel="Saving Moment…">
           Save Moment ♥
-        </button>
+        </FormSubmitButton>
       </form>
     </div>
   );

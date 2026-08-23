@@ -150,7 +150,9 @@ export default async function Page({
             defaultLatitude={me.latitude}
             defaultLongitude={me.longitude}
           />
-          <button className="btn btn-primary">Save profile</button>
+          <FormSubmitButton pendingLabel="Saving profile…">
+            Save profile
+          </FormSubmitButton>
         </form>
         <section className="surface card">
           <KeyRound className="size-6 text-[var(--rose)]" />
