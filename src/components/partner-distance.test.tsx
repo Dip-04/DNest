@@ -64,7 +64,7 @@ describe("partner distance status", () => {
 
   it("shows distance and the live map when both are sharing", () => {
     render(<PartnerDistance initialMe={me} initialPartner={partner} />);
-    expect(screen.getByText(/km apart/)).toBeVisible();
+    expect(screen.getAllByText(/km apart/)).toHaveLength(2);
     expect(
       screen.getByLabelText("Map showing both partner locations"),
     ).toBeVisible();
