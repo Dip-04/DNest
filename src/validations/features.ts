@@ -4,6 +4,11 @@ export const nestSchema = z.object({
   name: z.string().trim().min(2).max(80),
   relationship_start: z.iso.date().optional().or(z.literal("")),
 });
+export const nestUpdateSchema = nestSchema.extend({ nest_id: uuid });
+export const nestDeleteSchema = z.object({
+  nest_id: uuid,
+  confirmation: z.string().trim().min(2).max(80),
+});
 export const inviteSchema = z.object({
   nest_id: uuid,
   email: z.email().optional().or(z.literal("")),

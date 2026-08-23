@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   acceptInviteSchema,
   answerSchema,
@@ -10,7 +11,9 @@ import {
   meetupSchema,
   momentSchema,
   moodSchema,
+  nestDeleteSchema,
   nestSchema,
+  nestUpdateSchema,
   noteSchema,
   uuid,
   wishlistSchema,
@@ -74,6 +77,122 @@ export async function createInvite(form: FormData) {
     "A private invitation code was created.",
   );
 }
+export async function updateNest(form: FormData) {
+  const parsed = nestUpdateSchema.safeParse(Object.fromEntries(form));
+  if (!parsed.success) fail("/settings", firstIssue(parsed.error));
+  const { supabase } = await auth();
+  const { data, error } = await supabase
+    .from("nests")
+    .update({
+      name: parsed.data.name,
+      relationship_start: parsed.data.relationship_start || null,
+    })
+    .eq("id", parsed.data.nest_id)
+    .select("id")
+    .maybeSingle();
+  if (error || !data)
+    fail("/settings", "We could not update your Nest. Please try again.");
+  revalidatePath("/", "layout");
+  succeed("/settings", "Your Nest details were updated.");
+}
+
+async function collectNestStorageFiles(
+  admin: NonNullable<ReturnType<typeof createAdminClient>>,
+  bucket: string,
+  prefix: string,
+): Promise<{ paths: string[]; error: boolean }> {
+  const paths: string[] = [];
+  let offset = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await admin.storage.from(bucket).list(prefix, {
+      limit: pageSize,
+      offset,
+      sortBy: { column: "name", order: "asc" },
+    });
+    if (error) return { paths, error: true };
+    const entries = data ?? [];
+    for (const entry of entries) {
+      const path = `${prefix}/${entry.name}`;
+      if (entry.id) {
+        paths.push(path);
+      } else {
+        const nested = await collectNestStorageFiles(admin, bucket, path);
+        if (nested.error) return { paths, error: true };
+        paths.push(...nested.paths);
+      }
+    }
+    if (entries.length < pageSize) break;
+    offset += pageSize;
+  }
+  return { paths, error: false };
+}
+
+export async function deleteNest(form: FormData) {
+  const parsed = nestDeleteSchema.safeParse(Object.fromEntries(form));
+  if (!parsed.success) fail("/settings", firstIssue(parsed.error));
+  const { supabase, user } = await auth();
+  const { data: nest, error: nestError } = await supabase
+    .from("nests")
+    .select("name,created_by")
+    .eq("id", parsed.data.nest_id)
+    .maybeSingle();
+  if (nestError || !nest)
+    fail("/settings", "That Nest could not be found.");
+  if (nest.created_by !== user.id)
+    fail("/settings", "Only the person who created this Nest can delete it.");
+  if (parsed.data.confirmation !== nest.name)
+    fail("/settings", `Type ${nest.name} exactly to confirm deletion.`);
+
+  const admin = createAdminClient();
+  if (!admin)
+    fail(
+      "/settings",
+      "Nest deletion is not configured. Add the server-only Supabase service role key.",
+    );
+
+  const buckets = [
+    "moment-media",
+    "time-capsules",
+    "wishlist-images",
+    "relationship-assets",
+  ];
+  const filesByBucket: { bucket: string; paths: string[] }[] = [];
+  for (const bucket of buckets) {
+    const result = await collectNestStorageFiles(
+      admin,
+      bucket,
+      parsed.data.nest_id,
+    );
+    if (result.error)
+      fail(
+        "/settings",
+        "Private media could not be checked, so the Nest was not deleted.",
+      );
+    filesByBucket.push({ bucket, paths: result.paths });
+  }
+  for (const { bucket, paths } of filesByBucket) {
+    for (let index = 0; index < paths.length; index += 100) {
+      const { error } = await admin.storage
+        .from(bucket)
+        .remove(paths.slice(index, index + 100));
+      if (error)
+        fail(
+          "/settings",
+          "Private media could not be removed, so Nest deletion stopped.",
+        );
+    }
+  }
+
+  const { error } = await supabase.rpc("delete_owned_nest", {
+    p_nest_id: parsed.data.nest_id,
+  });
+  if (error)
+    fail("/settings", "The Nest could not be deleted. Please try again.");
+  revalidatePath("/", "layout");
+  succeed("/onboarding", "Your Nest and its shared data were deleted.");
+}
+
 export async function acceptInvite(form: FormData) {
   const parsed = acceptInviteSchema.safeParse(form.get("token"));
   if (!parsed.success) fail("/onboarding", firstIssue(parsed.error));

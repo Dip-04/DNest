@@ -1,9 +1,19 @@
 import Link from "next/link";
-import { Download, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
+import {
+  Download,
+  KeyRound,
+  LockKeyhole,
+  Pencil,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
+import { FormSubmitButton } from "@/components/form-submit-button";
 import {
   createInvite,
+  deleteNest,
   savePreferences,
+  updateNest,
   updateProfile,
 } from "@/features/shared/actions";
 import { getNestContext } from "@/lib/nest";
@@ -35,6 +45,7 @@ export default async function Page({
   const partner = context.nest.members.find(
     (m) => m.user_id !== context.userId,
   );
+  const isNestCreator = context.nest.created_by === context.userId;
   const { data: preferences } = await supabase
     .from("user_preferences")
     .select("notifications")
@@ -57,6 +68,35 @@ export default async function Page({
         </p>
       )}
       <div className="mt-7 grid gap-5 lg:grid-cols-2">
+        <form action={updateNest} className="surface card grid gap-4">
+          <Pencil className="size-6 text-[var(--rose)]" />
+          <h2 className="display text-3xl">Your Nest</h2>
+          <input type="hidden" name="nest_id" value={context.nest.id} />
+          <label className="label">
+            Nest name
+            <input
+              className="field"
+              name="name"
+              defaultValue={context.nest.name}
+              minLength={2}
+              maxLength={80}
+              required
+            />
+          </label>
+          <label className="label">
+            Relationship start date{" "}
+            <span className="font-normal">(optional)</span>
+            <input
+              className="field"
+              type="date"
+              name="relationship_start"
+              defaultValue={context.nest.relationship_start ?? ""}
+            />
+          </label>
+          <FormSubmitButton pendingLabel="Saving Nest…">
+            Save Nest
+          </FormSubmitButton>
+        </form>
         <form action={updateProfile} className="surface card grid gap-4">
           <h2 className="display text-3xl">Your profile</h2>
           <label className="label">
@@ -118,9 +158,12 @@ export default async function Page({
                     placeholder="partner@example.com"
                   />
                 </label>
-                <button className="btn btn-secondary">
+                <FormSubmitButton
+                  className="btn btn-secondary"
+                  pendingLabel="Generating…"
+                >
                   Generate a private code
-                </button>
+                </FormSubmitButton>
               </form>
               {q.invite && (
                 <div className="mt-5 rounded-2xl bg-[var(--rose-soft)] p-5 text-center">
@@ -181,6 +224,43 @@ export default async function Page({
             <Download className="size-4" />
             Download my Nest data
           </Link>
+        </section>
+        <section className="surface card border-red-300/40 lg:col-span-2">
+          <Trash2 className="size-6 text-red-500" />
+          <h2 className="display mt-5 text-3xl">Danger zone</h2>
+          {isNestCreator ? (
+            <>
+              <p className="muted mt-3 max-w-3xl text-sm leading-6">
+                Deleting this Nest permanently removes its shared Moments,
+                Love Notes, plans, settings, and private media for both
+                partners. This cannot be undone.
+              </p>
+              <form action={deleteNest} className="mt-5 grid max-w-xl gap-4">
+                <input type="hidden" name="nest_id" value={context.nest.id} />
+                <label className="label">
+                  Type <strong>{context.nest.name}</strong> to confirm
+                  <input
+                    className="field"
+                    name="confirmation"
+                    autoComplete="off"
+                    required
+                  />
+                </label>
+                <FormSubmitButton
+                  className="btn btn-danger w-fit"
+                  pendingLabel="Deleting Nest…"
+                  confirmMessage="Permanently delete this Nest and all shared relationship data?"
+                >
+                  Delete Nest Permanently
+                </FormSubmitButton>
+              </form>
+            </>
+          ) : (
+            <p className="muted mt-3 text-sm">
+              Only the partner who created this Nest can permanently delete
+              it.
+            </p>
+          )}
         </section>
       </div>
     </AnimatedPage>
