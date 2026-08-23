@@ -78,19 +78,19 @@ export function PartnerDistance({ initialMe, initialPartner }: {
   useEffect(() => {
     const supabase = createClient();
     const refresh = async (
-      person: PersonLocation,
+      avatarPath: string | null | undefined,
       setter: React.Dispatch<React.SetStateAction<PersonLocation>>,
     ) => {
-      if (!person.avatarPath) return;
+      if (!avatarPath) return;
       const signed = await supabase.storage
         .from("avatars")
-        .createSignedUrl(person.avatarPath, 86_400);
+        .createSignedUrl(avatarPath, 86_400);
       if (signed.data?.signedUrl)
         setter((current) => ({ ...current, avatarUrl: signed.data.signedUrl }));
     };
     const refreshBoth = () => {
-      void refresh(me, setMe);
-      void refresh(partner, setPartner);
+      void refresh(me.avatarPath, setMe);
+      void refresh(partner.avatarPath, setPartner);
     };
     refreshBoth();
     const timer = window.setInterval(refreshBoth, 60 * 60 * 1000);
