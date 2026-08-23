@@ -37,6 +37,7 @@ const nextConfig: NextConfig = {
       "questions",
       "notifications",
       "settings",
+      "period-tracker",
       "onboarding",
       "invite",
       "sign-in",

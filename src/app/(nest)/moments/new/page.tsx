@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, ImagePlus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { ImageUploadField } from "@/components/image-upload-field";
 import { createMoment } from "@/features/shared/actions";
 import { getNestContext } from "@/lib/nest";
 export default async function Page({
@@ -114,23 +115,7 @@ export default async function Page({
             />
           </label>
         </div>
-        <label className="label rounded-2xl border border-dashed border-[var(--border)] p-5">
-          <span className="flex items-center gap-2">
-            <ImagePlus className="size-5 text-[var(--rose)]" />
-            Photos <span className="font-normal">(up to 10)</span>
-          </span>
-          <input
-            className="field"
-            name="photos"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            multiple
-          />
-          <span className="text-xs font-normal">
-            Private, validated, and stored in your Nest-only bucket. 15 MB per
-            photo.
-          </span>
-        </label>
+        <ImageUploadField name="photos" label="Moment image (optional)" />
         <button className="btn btn-primary" type="submit">
           Save Moment ♥
         </button>

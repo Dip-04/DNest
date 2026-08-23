@@ -10,6 +10,7 @@ import {
 import { AnimatedPage } from "@/components/animated-page";
 import { FormSubmitButton } from "@/components/form-submit-button";
 import { LocationFields } from "@/components/location-fields";
+import { ImageUploadField } from "@/components/image-upload-field";
 import {
   createInvite,
   deleteNest,
@@ -54,6 +55,10 @@ export default async function Page({
     .select("notifications")
     .eq("user_id", context.userId)
     .single();
+  const avatarUrl = me.avatar_path
+    ? (await supabase.storage.from("avatars").createSignedUrl(me.avatar_path, 900))
+        .data?.signedUrl
+    : undefined;
   const q = await searchParams;
   const flags = (preferences?.notifications ?? {}) as Record<string, boolean>;
   return (
@@ -100,8 +105,18 @@ export default async function Page({
             Save Nest
           </FormSubmitButton>
         </form>
-        <form action={updateProfile} className="surface card grid gap-4">
+        <form
+          action={updateProfile}
+          className="surface card grid gap-4"
+          encType="multipart/form-data"
+        >
           <h2 className="display text-3xl">Your profile</h2>
+          <ImageUploadField
+            name="avatar"
+            label="Profile image"
+            currentUrl={avatarUrl}
+            removeName="remove_avatar"
+          />
           <label className="label">
             Display name
             <input

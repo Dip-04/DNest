@@ -10,6 +10,8 @@ type PersonLocation = {
   id: string;
   name: string;
   localTime?: string;
+  timezone?: string;
+  avatarUrl?: string;
   latitude: number | null;
   longitude: number | null;
   locationSharing: boolean;
@@ -96,6 +98,20 @@ export function PartnerDistance({
   const [partner, setPartner] = useState(initialPartner);
   const distance = useMemo(() => distanceKm(me, partner), [me, partner]);
   const map = useMemo(() => mapPresentation(me, partner), [me, partner]);
+
+  useEffect(() => {
+    if (!initialPartner.timezone) return;
+    const update = () => setPartner((current) => ({
+      ...current,
+      localTime: new Intl.DateTimeFormat("en", {
+        timeZone: initialPartner.timezone,
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(),
+    }));
+    const timer = window.setInterval(update, 30_000);
+    return () => window.clearInterval(timer);
+  }, [initialPartner.timezone]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -213,6 +229,7 @@ export function PartnerDistance({
         >
           <span
             className="between-map-avatar between-map-avatar-me"
+            style={me.avatarUrl ? { backgroundImage: `url(${JSON.stringify(me.avatarUrl)})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
             aria-hidden
           />
           <Heart className="between-map-heart size-6 fill-current" />
@@ -224,6 +241,7 @@ export function PartnerDistance({
         >
           <span
             className="between-map-avatar between-map-avatar-partner"
+            style={partner.avatarUrl ? { backgroundImage: `url(${JSON.stringify(partner.avatarUrl)})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}
             aria-hidden
           />
           <Heart className="between-map-heart size-6 fill-current" />

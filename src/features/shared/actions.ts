@@ -22,6 +22,14 @@ import {
   wishlistSchema,
 } from "@/validations/features";
 
+const IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+]);
+const PROFILE_IMAGE_MAX = 5 * 1024 * 1024;
+
 async function auth() {
   const value = await requireUser();
   if (!value) redirect("/sign-in");
@@ -307,7 +315,17 @@ export async function updateMoment(form: FormData) {
   const parsed = momentSchema.safeParse(Object.fromEntries(form));
   if (!id.success || !parsed.success)
     fail("/moments", "Check the Moment and try again.");
+  const imageValue = form.get("image");
+  const image = imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
+  const removeImage = form.get("remove_image") === "true";
+  if (image && (!IMAGE_TYPES.has(image.type) || image.size > PROFILE_IMAGE_MAX))
+    fail(`/moments/${id.data}/edit`, "Choose a JPG, PNG, WebP, or AVIF image up to 5 MB.");
   const { supabase, user } = await auth();
+  const { data: existingMedia } = await supabase
+    .from("moment_media")
+    .select("id,storage_path")
+    .eq("moment_id", id.data)
+    .order("sort_order");
   const { data: updated, error } = await supabase
     .from("moments")
     .update({
@@ -324,6 +342,36 @@ export async function updateMoment(form: FormData) {
     .select("id")
     .maybeSingle();
   if (error || !updated) fail("/moments", "That Moment could not be updated.");
+  if (image) {
+    const extension = image.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+    const path = `${parsed.data.nest_id}/${user.id}/${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await supabase.storage
+      .from("moment-media")
+      .upload(path, image, { contentType: image.type, upsert: false });
+    if (uploadError)
+      fail(`/moments/${id.data}/edit`, "The new image could not be uploaded.");
+    const { error: mediaError } = await supabase.from("moment_media").insert({
+      nest_id: parsed.data.nest_id,
+      moment_id: id.data,
+      storage_path: path,
+      mime_type: image.type,
+      alt_text: `Photo for ${parsed.data.title}`,
+      sort_order: 0,
+    });
+    if (mediaError) {
+      await supabase.storage.from("moment-media").remove([path]);
+      fail(`/moments/${id.data}/edit`, "The new image could not be attached.");
+    }
+  }
+  if ((image || removeImage) && existingMedia?.length) {
+    await supabase
+      .from("moment_media")
+      .delete()
+      .in("id", existingMedia.map((item) => item.id));
+    await supabase.storage
+      .from("moment-media")
+      .remove(existingMedia.map((item) => item.storage_path));
+  }
   await notifyPartner({
     nestId: parsed.data.nest_id,
     actorId: user.id,
@@ -915,7 +963,38 @@ export async function updateProfile(form: FormData) {
       (!Number.isFinite(longitude) || Math.abs(longitude) > 180))
   )
     fail("/settings", "Capture a valid location and try again.");
+  const avatarValue = form.get("avatar");
+  const avatar =
+    avatarValue instanceof File && avatarValue.size > 0 ? avatarValue : null;
+  const removeAvatar = form.get("remove_avatar") === "true";
+  if (
+    avatar &&
+    (!IMAGE_TYPES.has(avatar.type) || avatar.size > PROFILE_IMAGE_MAX)
+  )
+    fail(
+      "/settings",
+      "Choose a JPG, PNG, WebP, or AVIF profile image up to 5 MB.",
+    );
   const { supabase, user } = await auth();
+  const { data: current } = await supabase
+    .from("profiles")
+    .select("avatar_path")
+    .eq("id", user.id)
+    .single();
+  let uploadedPath: string | null = null;
+  if (avatar) {
+    const extension =
+      avatar.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+    uploadedPath = `${user.id}/profile-${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(uploadedPath, avatar, {
+        contentType: avatar.type,
+        upsert: false,
+      });
+    if (uploadError)
+      fail("/settings", "Your profile image could not be uploaded.");
+  }
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -925,9 +1004,20 @@ export async function updateProfile(form: FormData) {
       birthday,
       latitude,
       longitude,
+      ...(uploadedPath
+        ? { avatar_path: uploadedPath }
+        : removeAvatar
+          ? { avatar_path: null }
+          : {}),
     })
     .eq("id", user.id);
-  if (error) fail("/settings", "Your profile couldn’t be updated.");
+  if (error) {
+    if (uploadedPath)
+      await supabase.storage.from("avatars").remove([uploadedPath]);
+    fail("/settings", "Your profile could not be updated.");
+  }
+  if ((uploadedPath || removeAvatar) && current?.avatar_path)
+    await supabase.storage.from("avatars").remove([current.avatar_path]);
   const { data: membership } = await supabase
     .from("nest_members")
     .select("nest_id")

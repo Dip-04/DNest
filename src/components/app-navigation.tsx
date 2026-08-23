@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   Bell,
   BookHeart,
+  CalendarHeart,
   Heart,
   Home,
   Menu,
@@ -27,6 +28,7 @@ const nav = [
   { href: "/together", label: "Together", icon: Sparkles },
   { href: "/plans", label: "Plans", icon: Plane },
   { href: "/us", label: "Us", icon: UserRound },
+  { href: "/period-tracker", label: "Period Tracker", icon: CalendarHeart },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -70,6 +72,7 @@ export function MobileAppNavigation() {
     { href: "/questions", label: "Daily Question", icon: ScrollText },
     { href: "/notifications", label: "Notifications", icon: Bell },
     nav[7],
+    nav[8],
   ];
 
   useEffect(() => {

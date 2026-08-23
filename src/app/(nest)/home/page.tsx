@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/empty-state";
 import { MeetupCountdown } from "@/components/meetup-countdown";
 import { MoodPicker } from "@/components/mood-picker";
 import { PartnerDistance } from "@/components/partner-distance";
+import { PartnerLocalTime } from "@/components/partner-local-time";
 import { ThinkingOfYouButton } from "@/components/thinking-of-you-button";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
@@ -93,6 +94,14 @@ export default async function Home({
   }).format(new Date());
   const hour = Number(greeting);
   const daypart = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  const [myAvatarUrl, partnerAvatarUrl] = await Promise.all(
+    [me?.avatar_path, partner?.avatar_path].map(async (path) =>
+      path
+        ? (await supabase.storage.from("avatars").createSignedUrl(path, 900)).data
+            ?.signedUrl
+        : undefined,
+    ),
+  );
   return (
     <AnimatedPage>
       <header className="flex items-start justify-between gap-4">
@@ -103,9 +112,16 @@ export default async function Home({
             <span aria-hidden>♥</span>
           </h1>
           <p className="muted mt-2">
-            {partner
-              ? `${partner.display_name}’s time is ${formatLocalTime(partner.timezone)}`
-              : "Your Nest is ready for the person you love."}
+            {partner ? (
+              <PartnerLocalTime
+                name={partner.display_name}
+                timezone={safeTimeZone(partner.timezone)}
+                city={partner.city}
+                initialTime={formatLocalTime(partner.timezone)}
+              />
+            ) : (
+              "Your Nest is ready for the person you love."
+            )}
           </p>
         </div>
         <Link
@@ -126,6 +142,8 @@ export default async function Home({
             id: me.id,
             name: me.display_name,
             localTime: formatLocalTime(me.timezone),
+            timezone: safeTimeZone(me.timezone),
+            avatarUrl: myAvatarUrl,
             latitude: me.latitude,
             longitude: me.longitude,
             locationSharing: me.location_sharing,
@@ -134,6 +152,8 @@ export default async function Home({
             id: partner.id,
             name: partner.display_name,
             localTime: formatLocalTime(partner.timezone),
+            timezone: safeTimeZone(partner.timezone),
+            avatarUrl: partnerAvatarUrl,
             latitude: partner.latitude,
             longitude: partner.longitude,
             locationSharing: partner.location_sharing,

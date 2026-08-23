@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Save } from "lucide-react";
 import { updateMoment } from "@/features/shared/actions";
+import { ImageUploadField } from "@/components/image-upload-field";
 import { getNestContext } from "@/lib/nest";
 import { createClient } from "@/lib/supabase/server";
 import type { Moment } from "@/types/database";
@@ -39,12 +40,21 @@ export default async function EditMomentPage({
   const supabase = await createClient();
   const { data } = await supabase
     .from("moments")
-    .select("*")
+    .select("*,moment_media(storage_path,sort_order)")
     .eq("id", id)
     .eq("nest_id", context.nest.id)
     .maybeSingle();
   if (!data) notFound();
   const moment = data as Moment;
+  const media = (
+    data as unknown as {
+      moment_media: { storage_path: string; sort_order: number }[];
+    }
+  ).moment_media.sort((a, b) => a.sort_order - b.sort_order)[0];
+  const currentImageUrl = media
+    ? (await supabase.storage.from("moment-media").createSignedUrl(media.storage_path, 900))
+        .data?.signedUrl
+    : undefined;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -62,6 +72,7 @@ export default async function EditMomentPage({
       <form
         action={updateMoment}
         className="surface card mt-7 grid gap-5 p-6 sm:p-8"
+        encType="multipart/form-data"
       >
         <input type="hidden" name="id" value={moment.id} />
         <input type="hidden" name="nest_id" value={context.nest.id} />
@@ -102,6 +113,11 @@ export default async function EditMomentPage({
             </select>
           </label>
         </div>
+        <ImageUploadField
+          name="image"
+          label="Moment image (optional)"
+          currentUrl={currentImageUrl}
+        />
         <label className="label">
           Story
           <textarea
