@@ -13,13 +13,14 @@ import { EmptyState } from "@/components/empty-state";
 import { MeetupCountdown } from "@/components/meetup-countdown";
 import { MoodPicker } from "@/components/mood-picker";
 import { PartnerDistance } from "@/components/partner-distance";
-import { thinkOfPartner } from "@/features/shared/actions";
+import { ThinkingOfYouButton } from "@/components/thinking-of-you-button";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import {
   daysTogether,
   distanceKm,
   formatLocalTime,
+  safeTimeZone,
   yearsAgoOnThisDay,
 } from "@/lib/date";
 import type { Moment, Profile } from "@/types/database";
@@ -37,8 +38,9 @@ export default async function Home({
     Profile | undefined;
   const partner = members.find((m) => m.user_id !== context.userId)
     ?.profiles as Profile | undefined;
+  const myTimeZone = safeTimeZone(me?.timezone);
   const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: me?.timezone ?? "UTC",
+    timeZone: myTimeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -48,6 +50,7 @@ export default async function Home({
     { data: moods },
     { data: moments },
     { count: unreadCount },
+    { data: thinkingEvents },
   ] = await Promise.all([
     supabase
       .from("meetups")
@@ -71,6 +74,12 @@ export default async function Home({
       .from("notifications")
       .select("id", { count: "exact", head: true })
       .is("read_at", null),
+    supabase
+      .from("thinking_of_you_events")
+      .select("created_at")
+      .eq("sender_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(1),
   ]);
   const meetup = meetups?.[0];
   const recent = (moments ?? []) as Moment[];
@@ -83,7 +92,7 @@ export default async function Home({
       : null;
   const query = await searchParams;
   const greeting = new Intl.DateTimeFormat("en", {
-    timeZone: me?.timezone ?? "UTC",
+    timeZone: myTimeZone,
     hour: "numeric",
     hour12: false,
   }).format(new Date());
@@ -200,17 +209,11 @@ export default async function Home({
           <p className="muted mt-2">
             Send one quiet reminder that they’re loved.
           </p>
-          <form action={thinkOfPartner} className="mt-6">
-            <input type="hidden" name="nest_id" value={context.nest.id} />
-            <button
-              className="thinking-button btn btn-primary w-full"
-              disabled={!partner}
-              type="submit"
-            >
-              <Heart className="size-5 fill-current" />
-              Thinking of You
-            </button>
-          </form>
+          <ThinkingOfYouButton
+            nestId={context.nest.id}
+            partnerPresent={Boolean(partner)}
+            lastSentAt={thinkingEvents?.[0]?.created_at ?? null}
+          />
         </article>
         <article className="surface card">
           <span className="eyebrow">Today’s mood</span>
@@ -220,7 +223,7 @@ export default async function Home({
           </p>
           <MoodPicker
             nestId={context.nest.id}
-            timezone={me?.timezone ?? "UTC"}
+            timezone={myTimeZone}
             current={moods?.find((m) => m.user_id === context.userId)?.mood}
           />
           {partner && (

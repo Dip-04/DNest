@@ -846,6 +846,107 @@ a {
 .live-distance-pin-me {
   color: var(--rose-deep);
 }
+.between-us-widget .live-distance-map {
+  display: grid;
+  min-height: 13rem;
+  grid-template-columns: minmax(4.25rem, 0.7fr) minmax(7rem, 1.6fr) minmax(
+      4.25rem,
+      0.7fr
+    );
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1.25rem 0.75rem;
+}
+.between-person {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.between-person strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.between-avatar {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  border: 4px solid var(--surface);
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--peach), var(--rose-soft));
+  color: var(--rose-deep);
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-soft);
+}
+.between-avatar-partner {
+  background: linear-gradient(145deg, var(--sage-soft), var(--plum-soft));
+  color: var(--plum);
+}
+.between-route {
+  position: relative;
+  min-height: 9rem;
+  align-self: stretch;
+}
+.between-route svg {
+  position: absolute;
+  inset: 0.8rem 0 2.2rem;
+  width: 100%;
+  height: calc(100% - 3rem);
+  overflow: visible;
+}
+.between-route path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--rose) 70%, var(--plum));
+  stroke-width: 8;
+  stroke-linecap: round;
+  filter: drop-shadow(
+    0 4px 5px color-mix(in srgb, var(--rose) 25%, transparent)
+  );
+}
+.between-heart {
+  position: absolute;
+  color: var(--rose-deep);
+  filter: drop-shadow(0 2px 3px var(--surface));
+}
+.between-heart-start {
+  top: 0.7rem;
+  left: 0;
+}
+.between-heart-end {
+  right: 0;
+  bottom: 2rem;
+}
+.between-distance {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: var(--shadow-soft);
+}
+@media (max-width: 420px) {
+  .between-avatar {
+    width: 3.4rem;
+    height: 3.4rem;
+  }
+}
 
 @media (min-width: 1024px) {
   .mobile-app-nav {

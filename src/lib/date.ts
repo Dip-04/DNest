@@ -63,3 +63,16 @@ export function formatLocalTime(timezone: string, now = new Date()) {
     return "Time zone not set";
   }
 }
+
+export function isValidTimeZone(timezone: string) {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone }).format();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function safeTimeZone(timezone: string | null | undefined) {
+  return timezone && isValidTimeZone(timezone) ? timezone : "UTC";
+}

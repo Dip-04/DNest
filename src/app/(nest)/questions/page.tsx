@@ -4,6 +4,7 @@ import { answerQuestion } from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import type { Profile } from "@/types/database";
+import { safeTimeZone } from "@/lib/date";
 type AnswerRow = {
   user_id: string;
   answer: string | null;
@@ -23,7 +24,7 @@ export default async function Page({
   const partner = context.nest.members.find((m) => m.user_id !== context.userId)
     ?.profiles as Profile | undefined;
   const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: me?.timezone ?? "UTC",
+    timeZone: safeTimeZone(me?.timezone),
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

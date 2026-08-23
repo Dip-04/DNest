@@ -3,6 +3,8 @@ import {
   countdown,
   daysTogether,
   distanceKm,
+  isValidTimeZone,
+  safeTimeZone,
   yearsAgoOnThisDay,
 } from "@/lib/date";
 describe("relationship dates", () => {
@@ -55,4 +57,12 @@ describe("distance", () => {
         { latitude: 1, longitude: 1 },
       ),
     ).toBeNull());
+});
+
+describe("timezones", () => {
+  it("falls back safely for an invalid profile timezone", () => {
+    expect(isValidTimeZone("LTC")).toBe(false);
+    expect(safeTimeZone("LTC")).toBe("UTC");
+    expect(safeTimeZone("Asia/Kolkata")).toBe("Asia/Kolkata");
+  });
 });

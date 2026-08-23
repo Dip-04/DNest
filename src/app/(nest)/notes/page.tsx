@@ -1,7 +1,8 @@
-import { Clock3, Heart } from "lucide-react";
+import { Clock3, Heart, LockKeyhole, MailOpen } from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
 import { EmptyState } from "@/components/empty-state";
-import { createNote } from "@/features/shared/actions";
+import { FormSubmitButton } from "@/components/form-submit-button";
+import { createNote, openLoveNote } from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import type { Profile } from "@/types/database";
@@ -87,30 +88,54 @@ export default async function Page({
           <h2 className="display text-3xl">Kept between you</h2>
           {notes?.length ? (
             <div className="mt-4 grid gap-4">
-              {notes.map((note) => (
-                <article className="love-letter surface card" key={note.id}>
-                  <div className="flex items-center justify-between">
-                    <span className="chip">{note.theme}</span>
-                    <span className="muted flex items-center gap-1 text-xs">
-                      <Clock3 className="size-3" />
-                      {note.status === "scheduled"
-                        ? `Scheduled ${new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(note.deliver_at))}`
-                        : new Intl.DateTimeFormat("en", {
-                            dateStyle: "medium",
-                          }).format(new Date(note.created_at))}
-                    </span>
-                  </div>
-                  <p className="display mt-6 whitespace-pre-wrap text-2xl leading-9">
-                    {note.body}
-                  </p>
-                  <p className="muted mt-5 text-xs">
-                    {note.sender_id === context.userId
-                      ? "From you"
-                      : `From ${partner?.display_name ?? "your partner"}`}{" "}
-                    · {note.opened_at ? "Opened" : "Unopened"}
-                  </p>
-                </article>
-              ))}
+              {notes.map((note) => {
+                const sealed =
+                  note.recipient_id === context.userId && !note.opened_at;
+                return (
+                  <article
+                    className="love-letter surface card"
+                    id={`note-${note.id}`}
+                    key={note.id}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="chip">{note.theme}</span>
+                      <span className="muted flex items-center gap-1 text-xs">
+                        <Clock3 className="size-3" />
+                        {note.status === "scheduled"
+                          ? `Scheduled ${new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(note.deliver_at))}`
+                          : new Intl.DateTimeFormat("en", {
+                              dateStyle: "medium",
+                            }).format(new Date(note.created_at))}
+                      </span>
+                    </div>
+                    {sealed ? (
+                      <div className="mt-6 rounded-2xl bg-[var(--rose-soft)] p-6 text-center">
+                        <LockKeyhole className="mx-auto size-7 text-[var(--rose-deep)]" />
+                        <p className="display mt-3 text-2xl">
+                          A Love Note is waiting for you
+                        </p>
+                        <form action={openLoveNote} className="mt-4">
+                          <input type="hidden" name="id" value={note.id} />
+                          <FormSubmitButton pendingLabel="Openingâ€¦">
+                            <MailOpen className="size-4" />
+                            Open Love Note
+                          </FormSubmitButton>
+                        </form>
+                      </div>
+                    ) : (
+                      <p className="display mt-6 whitespace-pre-wrap text-2xl leading-9">
+                        {note.body}
+                      </p>
+                    )}
+                    <p className="muted mt-5 text-xs">
+                      {note.sender_id === context.userId
+                        ? "From you"
+                        : `From ${partner?.display_name ?? "your partner"}`}{" "}
+                      · {note.opened_at ? "Opened" : "Unopened"}
+                    </p>
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <div className="mt-4">

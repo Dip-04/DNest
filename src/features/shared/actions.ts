@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyPartner } from "@/lib/partner-notifications";
 import { safeNextPath } from "@/lib/route-access";
+import { isValidTimeZone } from "@/lib/date";
 import {
   acceptInviteSchema,
   answerSchema,
@@ -456,6 +457,25 @@ export async function createNote(form: FormData) {
       : "Your Love Note is safely on its way.",
   );
 }
+
+export async function openLoveNote(form: FormData) {
+  const id = uuid.safeParse(form.get("id"));
+  if (!id.success) fail("/notes", "That Love Note could not be identified.");
+  const { supabase, user } = await auth();
+  const { data: note, error } = await supabase
+    .from("love_notes")
+    .update({ opened_at: new Date().toISOString() })
+    .eq("id", id.data)
+    .eq("recipient_id", user.id)
+    .eq("status", "delivered")
+    .is("opened_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error || !note) fail("/notes", "That Love Note is not ready to open.");
+  revalidatePath("/notes");
+  succeed("/notes", "Love Note opened.");
+}
+
 export async function createMeetup(form: FormData) {
   const parsed = meetupSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/plans", firstIssue(parsed.error));
@@ -882,6 +902,11 @@ export async function updateProfile(form: FormData) {
   const longitude = longitudeValue ? Number(longitudeValue) : null;
   if (name.length < 2)
     fail("/settings", "Your name needs at least two characters.");
+  if (!isValidTimeZone(timezone))
+    fail(
+      "/settings",
+      "Use a valid timezone such as Asia/Kolkata or Europe/London.",
+    );
   if (
     (latitude == null) !== (longitude == null) ||
     (latitude != null &&

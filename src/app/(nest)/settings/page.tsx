@@ -21,6 +21,7 @@ import { getNestContext } from "@/lib/nest";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/types/database";
 import { PushSetup } from "@/components/push-setup";
+import { safeTimeZone } from "@/lib/date";
 const kinds = [
   ["love_note", "Love Notes"],
   ["thinking_of_you", "Thinking of You"],
@@ -123,7 +124,8 @@ export default async function Page({
             <input
               className="field"
               name="timezone"
-              defaultValue={me.timezone}
+              defaultValue={safeTimeZone(me.timezone)}
+              placeholder="Asia/Kolkata"
               required
             />
           </label>

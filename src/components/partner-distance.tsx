@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LocateFixed, MapPin } from "lucide-react";
+import { Heart, LocateFixed, MapPin } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { distanceKm } from "@/lib/date";
 import { createClient } from "@/lib/supabase/client";
@@ -20,13 +20,6 @@ function hasLocation(person: PersonLocation) {
     person.latitude != null &&
     person.longitude != null
   );
-}
-
-function mapPosition(person: PersonLocation) {
-  return {
-    left: `${((person.longitude ?? 0) + 180) / 3.6}%`,
-    top: `${(90 - (person.latitude ?? 0)) / 1.8}%`,
-  };
 }
 
 export function PartnerDistance({
@@ -116,34 +109,51 @@ export function PartnerDistance({
   }
 
   return (
-    <section className="surface card mt-5 overflow-hidden p-0">
+    <section className="between-us-widget surface card mt-5 overflow-hidden p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 p-5">
         <div>
-          <span className="eyebrow">Live distance</span>
+          <span className="eyebrow">Between us</span>
           <p className="display mt-1 text-3xl">
             {distance?.toLocaleString() ?? "â€”"} km apart
           </p>
         </div>
         <span className="chip flex items-center gap-2">
           <span className="size-2 animate-pulse rounded-full bg-emerald-500" />
-          Updates while DNest is open
+          Live
         </span>
       </div>
       <div
         className="live-distance-map"
         aria-label="Map showing both partner locations"
       >
-        {[me, partner].map((person, index) => (
-          <div
-            className={`live-distance-pin ${index === 0 ? "live-distance-pin-me" : ""}`}
-            style={mapPosition(person)}
-            key={person.id}
-          >
-            <MapPin className="size-6 fill-current" />
-            <span>{index === 0 ? "You" : person.name}</span>
+        <div className="between-person">
+          <span className="between-avatar">
+            {me.name.slice(0, 1).toUpperCase()}
+          </span>
+          <strong>You</strong>
+        </div>
+        <div className="between-route">
+          <svg viewBox="0 0 180 92" aria-hidden="true">
+            <path d="M10 16 C 55 5, 40 82, 90 50 S 132 12, 170 70" />
+          </svg>
+          <Heart className="between-heart between-heart-start size-5 fill-current" />
+          <Heart className="between-heart between-heart-end size-5 fill-current" />
+          <div className="between-distance">
+            <MapPin className="size-4" />
+            <strong>{distance?.toLocaleString() ?? "-"} km</strong>
           </div>
-        ))}
+        </div>
+        <div className="between-person">
+          <span className="between-avatar between-avatar-partner">
+            {partner.name.slice(0, 1).toUpperCase()}
+          </span>
+          <strong>{partner.name}</strong>
+        </div>
       </div>
+      <p className="muted px-5 py-3 text-center text-xs">
+        Updates while DNest is open; the last location remains available when
+        closed.
+      </p>
     </section>
   );
 }
