@@ -5,6 +5,7 @@ import { ServiceWorkerRegistration } from "@/components/service-worker-registrat
 import { LiveLocationTracker } from "@/components/live-location-tracker";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandMark } from "@/components/brand-mark";
+import { NotificationCountBadge } from "@/components/notification-count-badge";
 import {
   DesktopAppNavigation,
   MobileAppNavigation,
@@ -42,6 +43,7 @@ export function AppShell({
           >
             <Map className="size-4" />
             Notifications
+            <NotificationCountBadge />
           </Link>
           <form action={signOut}>
             <button

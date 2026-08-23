@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { Heart } from "lucide-react";
 
 export function FormSubmitButton({
   children,
@@ -26,7 +27,7 @@ export function FormSubmitButton({
         }
       }}
     >
-      {pending ? pendingLabel : children}
+      {pending ? <><Heart className="size-4 animate-pulse fill-current" />{pendingLabel}</> : children}
     </button>
   );
 }

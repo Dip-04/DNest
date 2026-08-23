@@ -630,6 +630,44 @@ export async function markNotificationRead(form: FormData) {
   succeed("/notifications", "Notification marked as read.");
 }
 
+export async function markNotificationReadInline(idValue: string): Promise<{
+  ok: boolean;
+  message: string;
+}> {
+  const id = uuid.safeParse(idValue);
+  if (!id.success)
+    return { ok: false, message: "That notification could not be identified." };
+  const { supabase } = await auth();
+  const { data, error } = await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", id.data)
+    .is("read_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error) return { ok: false, message: "The notification could not be updated." };
+  revalidatePath("/notifications");
+  revalidatePath("/home");
+  return { ok: true, message: data ? "Notification marked as read." : "Notification was already read." };
+}
+
+export async function markAllNotificationsReadInline(): Promise<{
+  ok: boolean;
+  message: string;
+}> {
+  const { supabase, user } = await auth();
+  const { error } = await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("recipient_id", user.id)
+    .is("read_at", null);
+  if (error)
+    return { ok: false, message: "Notifications could not be marked as read." };
+  revalidatePath("/notifications");
+  revalidatePath("/home");
+  return { ok: true, message: "All notifications marked as read." };
+}
+
 export async function openNotification(form: FormData) {
   const id = uuid.safeParse(form.get("id"));
   if (!id.success)

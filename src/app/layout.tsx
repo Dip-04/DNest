@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Suspense } from "react";
 import { ToastViewport } from "@/components/toast-viewport";
+import { RequestExperience } from "@/components/request-experience";
 import { getSiteUrl, siteDescription, siteName, siteTitle } from "@/lib/seo";
 import "./globals.css";
 
@@ -106,6 +107,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
+        <RequestExperience />
         <Suspense fallback={null}>
           <ToastViewport />
         </Suspense>

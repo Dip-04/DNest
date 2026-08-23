@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { EditableFormSection } from "@/components/editable-form-section";
 import { LocationFields } from "@/components/location-fields";
 import { ImageUploadField } from "@/components/image-upload-field";
 import {
@@ -76,7 +77,7 @@ export default async function Page({
         </p>
       )}
       <div className="mt-7 grid gap-5 lg:grid-cols-2">
-        <form action={updateNest} className="surface card grid gap-4">
+        <EditableFormSection action={updateNest} className="surface card grid gap-4">
           <Pencil className="size-6 text-[var(--rose)]" />
           <h2 className="display text-3xl">Your Nest</h2>
           <input type="hidden" name="nest_id" value={context.nest.id} />
@@ -101,11 +102,8 @@ export default async function Page({
               defaultValue={context.nest.relationship_start ?? ""}
             />
           </label>
-          <FormSubmitButton pendingLabel="Saving Nest…">
-            Save Nest
-          </FormSubmitButton>
-        </form>
-        <form
+        </EditableFormSection>
+        <EditableFormSection
           action={updateProfile}
           className="surface card grid gap-4"
           encType="multipart/form-data"
@@ -170,10 +168,7 @@ export default async function Page({
             defaultLatitude={me.latitude}
             defaultLongitude={me.longitude}
           />
-          <FormSubmitButton pendingLabel="Saving profile…">
-            Save profile
-          </FormSubmitButton>
-        </form>
+        </EditableFormSection>
         <section className="surface card">
           <KeyRound className="size-6 text-[var(--rose)]" />
           <h2 className="display mt-5 text-3xl">Partner invitation</h2>

@@ -1267,6 +1267,59 @@ a {
 }
 .cycle-progress { height: 0.7rem; overflow: hidden; border-radius: 99px; background: var(--surface-muted); }
 .cycle-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--rose), var(--plum)); transition: width 0.5s ease; }
+.field-error {
+  display: block;
+  margin-top: 0.35rem;
+  color: #c2414b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.notification-count-badge {
+  display: inline-grid;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  margin-left: auto;
+  place-items: center;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--rose-deep);
+  color: white;
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+.notification-unread { border-color: color-mix(in srgb, var(--rose) 45%, var(--border)); box-shadow: 0 12px 35px color-mix(in srgb, var(--rose) 12%, transparent); }
+.field[aria-invalid="true"] { border-color: #d65c68; box-shadow: 0 0 0 3px color-mix(in srgb, #d65c68 14%, transparent); }
+.dnest-loader {
+  position: fixed;
+  z-index: 2000;
+  top: max(1rem, env(safe-area-inset-top));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--rose) 35%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 14px 40px rgb(37 24 32 / 18%);
+  backdrop-filter: blur(16px);
+  transform: translateX(-50%);
+  animation: dnest-loader-arrive 0.24s ease-out;
+}
+.dnest-loader-nest { position: relative; width: 2rem; height: 1.45rem; }
+.dnest-loader-nest > span { position: absolute; right: 0; bottom: 0; left: 0; height: 0.52rem; border-bottom: 2px solid var(--plum); border-radius: 50%; animation: dnest-nest-wave 1.15s ease-in-out infinite; }
+.dnest-loader-nest > span:nth-child(2) { bottom: 0.2rem; animation-delay: -0.18s; }
+.dnest-loader-nest > span:nth-child(3) { bottom: 0.4rem; animation-delay: -0.36s; }
+.dnest-loader-heart { position: absolute; top: -0.05rem; left: 0.68rem; width: 0.75rem; color: var(--rose-deep); fill: currentColor; animation: dnest-heart-pulse 0.85s ease-in-out infinite; }
+@keyframes dnest-loader-arrive { from { opacity: 0; transform: translate(-50%, -0.45rem) scale(0.95); } }
+@keyframes dnest-nest-wave { 50% { transform: scaleX(0.84) translateY(0.08rem); opacity: 0.65; } }
+@keyframes dnest-heart-pulse { 50% { transform: scale(1.2) translateY(-0.08rem); } }
+@media (prefers-reduced-motion: reduce) {
+  .dnest-loader, .dnest-loader-nest > span, .dnest-loader-heart { animation: none; }
+}
 @media (max-width: 520px) {
   .period-day { min-height: 3.25rem; border-radius: 0.75rem; }
   .period-date-sheet { right: 0; bottom: 0; width: 100%; max-height: 88dvh; border-radius: 2rem 2rem 0 0; }

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { NotificationCountBadge } from "@/components/notification-count-badge";
 
 const nav = [
   { href: "/home", label: "Home", icon: Home },
@@ -134,6 +135,7 @@ export function MobileAppNavigation() {
                 >
                   <Icon className="size-5" />
                   <span>{label}</span>
+                  {label === "Notifications" && <NotificationCountBadge />}
                 </Link>
               ))}
             </nav>

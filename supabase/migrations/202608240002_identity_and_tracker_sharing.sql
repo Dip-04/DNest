@@ -1,3 +1,31 @@
+-- Keep this migration safe when it is applied manually without 202608240001.
+create table if not exists public.period_tracker_settings (
+  user_id uuid primary key references public.profiles(id) on delete cascade,
+  default_cycle_length smallint not null default 28 check(default_cycle_length between 20 and 45),
+  default_period_length smallint not null default 5 check(default_period_length between 1 and 15),
+  timezone text not null default 'UTC',
+  tracker_enabled boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.period_cycles (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  start_date date not null,
+  end_date date,
+  cycle_length smallint check(cycle_length between 15 and 90),
+  period_length smallint check(period_length between 1 and 15),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint period_cycle_dates_valid check(end_date is null or end_date >= start_date),
+  unique(user_id,start_date)
+);
+create index if not exists period_cycles_user_start_idx on public.period_cycles(user_id,start_date desc);
+alter table public.period_tracker_settings enable row level security;
+alter table public.period_cycles enable row level security;
+grant select,insert,update,delete on public.period_tracker_settings to authenticated;
+grant select,insert,update,delete on public.period_cycles to authenticated;
+
 alter table public.profiles add column if not exists gender_identity text
   check(gender_identity is null or char_length(gender_identity) between 1 and 60);
 alter table public.profiles add column if not exists location_accuracy_m numeric(10,2)

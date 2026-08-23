@@ -14,6 +14,7 @@ import { MeetupCountdown } from "@/components/meetup-countdown";
 import { MoodPicker } from "@/components/mood-picker";
 import { PartnerDistance } from "@/components/partner-distance";
 import { PartnerLocalTime } from "@/components/partner-local-time";
+import { NotificationCountBadge } from "@/components/notification-count-badge";
 import { ThinkingOfYouButton } from "@/components/thinking-of-you-button";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
@@ -131,9 +132,7 @@ export default async function Home({
         >
           <Heart className="size-5" />
           <span className="sr-only">Unread notifications</span>
-          {(unreadCount ?? 0) > 0 && (
-            <span className="size-2 rounded-full bg-[var(--rose)]" />
-          )}
+          {(unreadCount ?? 0) > 0 && <NotificationCountBadge initialCount={unreadCount ?? 0} />}
         </Link>
       </header>
       {me && partner && (

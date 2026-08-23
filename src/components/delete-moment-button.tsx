@@ -1,12 +1,15 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 export function DeleteMomentButton() {
+  const { pending } = useFormStatus();
   return (
     <button
       className="btn btn-danger"
       type="submit"
+      disabled={pending}
       onClick={(event) => {
         if (
           !window.confirm(
@@ -17,8 +20,8 @@ export function DeleteMomentButton() {
         }
       }}
     >
-      <Trash2 className="size-4" />
-      Delete
+      <Trash2 className={`size-4 ${pending ? "animate-pulse" : ""}`} />
+      {pending ? "Deleting…" : "Delete"}
     </button>
   );
 }
