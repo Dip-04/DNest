@@ -91,7 +91,7 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
 };
 
-const themeInitScript = `(function(){try{var saved=localStorage.getItem("dnest-theme");var theme=saved==="light"||saved==="dark"?saved:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}catch(e){}})()`;
+const themeInitScript = `(function(){try{var saved=localStorage.getItem("dnest-theme");var theme=saved==="dark"?"dark":"light";document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}catch(e){}})()`;
 
 export default function RootLayout({
   children,
@@ -99,6 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-theme="light"
       data-scroll-behavior="smooth"
       suppressHydrationWarning
       className={`${bodyFont.variable} ${displayFont.variable}`}
