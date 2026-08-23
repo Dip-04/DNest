@@ -1,7 +1,0 @@
-com.dnest.app-pngs-0 D:\hotel\DNest\native\android\app\build\generated\res\pngs\debug
-com.dnest.app-updated_navigation_xml-1 D:\hotel\DNest\native\android\app\build\generated\updated_navigation_xml\debug
-com.dnest.app-packageDebugResources-2 D:\hotel\DNest\native\android\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
-com.dnest.app-packageDebugResources-3 D:\hotel\DNest\native\android\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
-com.dnest.app-debug-4 D:\hotel\DNest\native\android\app\build\intermediates\merged_res\debug\mergeDebugResources
-com.dnest.app-debug-5 D:\hotel\DNest\native\android\app\src\debug\res
-com.dnest.app-main-6 D:\hotel\DNest\native\android\app\src\main\res

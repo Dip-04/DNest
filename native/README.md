@@ -17,7 +17,9 @@ The Android project is in `native/android` and targets SDK 36. It contains:
 Open `native/android` in Android Studio, select the `app` configuration, and
 run it on the phone. A debug APK is generated at
 `native/android/app/build/outputs/apk/debug/app-debug.apk` after
-`:app:assembleDebug`.
+`:app:assembleDebug`. The locally verified build is also copied to
+`native/android/DNest-debug.apk` for direct device testing; it is intentionally
+git-ignored because release packages must be signed by the app owner.
 
 On the phone, sign in to the deployed web app, open Settings, choose **Connect
 Android**, and tap **Open in DNest app**. Grant notification and precise
@@ -67,4 +69,3 @@ the server environment. Native requests use:
 
 The state endpoint returns coordinates only when both partners have enabled
 location sharing and always sends `Cache-Control: private, no-store`.
-

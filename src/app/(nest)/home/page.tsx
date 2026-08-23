@@ -18,7 +18,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import {
   daysTogether,
-  distanceKm,
   formatLocalTime,
   safeTimeZone,
   yearsAgoOnThisDay,
@@ -86,10 +85,6 @@ export default async function Home({
   const onThisDay = recent.find((moment) =>
     yearsAgoOnThisDay(moment.moment_at),
   );
-  const distance =
-    me?.location_sharing && partner?.location_sharing
-      ? distanceKm(me, partner)
-      : null;
   const query = await searchParams;
   const greeting = new Intl.DateTimeFormat("en", {
     timeZone: myTimeZone,
