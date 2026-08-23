@@ -2,6 +2,8 @@ package com.dnest.app;
 
 import android.Manifest;
 import android.app.Activity;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -57,6 +59,11 @@ public final class MainActivity extends Activity {
         root.addView(serverField, matchWrap());
         root.addView(tokenField, matchWrap());
 
+        Button addWidget = new Button(this);
+        addWidget.setText("Add Between Us home widget");
+        addWidget.setOnClickListener(view -> requestPinWidget());
+        root.addView(addWidget, matchWrap());
+
         Button start = new Button(this);
         start.setText("Enable live lock-screen distance");
         start.setOnClickListener(view -> saveAndStart());
@@ -70,6 +77,27 @@ public final class MainActivity extends Activity {
         });
         root.addView(stop, matchWrap());
         return root;
+    }
+
+    private void requestPinWidget() {
+        AppWidgetManager manager = AppWidgetManager.getInstance(this);
+        ComponentName provider = new ComponentName(this, BetweenUsWidgetProvider.class);
+        if (!manager.isRequestPinAppWidgetSupported()) {
+            Toast.makeText(
+                    this,
+                    "Long-press Home, open Widgets, then choose DNest.",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+        boolean requested = manager.requestPinAppWidget(provider, null, null);
+        Toast.makeText(
+                this,
+                requested
+                        ? "Confirm Add on the Samsung widget preview"
+                        : "Samsung launcher did not open the widget preview",
+                Toast.LENGTH_LONG
+        ).show();
     }
 
     private void acceptDeepLink(Intent intent) {
@@ -134,4 +162,3 @@ public final class MainActivity extends Activity {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 }
-
