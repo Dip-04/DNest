@@ -43,4 +43,3 @@ targets:
         PRODUCT_NAME: DNestWidgets
         SKIP_INSTALL: true
         APPLICATION_EXTENSION_API_ONLY: true
-

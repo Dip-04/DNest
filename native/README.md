@@ -57,6 +57,21 @@ by the remote partner moving require APNs ActivityKit push credentials; those
 credentials cannot be created without the app owner's paid Apple Developer
 account and are intentionally not stored in this repository.
 
+### Free Windows installation (7-day sideload)
+
+The public GitHub repository includes **Build unsigned iPhone IPA** under the
+Actions tab. Run that workflow, download its `DNest-unsigned-iPhone` artifact,
+and extract `DNest-unsigned.ipa`. On Windows, install the IPA with AltStore
+Classic or Sideloadly using a free Apple Account. Apple limits free profiles to
+7 days and three installed sideloaded apps, so keep the Windows refresh helper
+running or reinstall weekly. Enable **Settings → Privacy & Security → Developer
+Mode** on the iPhone after the first install.
+
+The free workflow removes App Group entitlements because they require advanced
+provisioning. The Lock Screen Live Activity can still receive state from the
+main app. Full WidgetKit cache sharing, APNs remote updates, TestFlight, and
+permanent distribution require Apple Developer Program membership.
+
 ## Backend deployment
 
 Apply `supabase/migrations/202608230004_native_widget_access.sql`, deploy the
