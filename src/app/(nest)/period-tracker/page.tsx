@@ -5,10 +5,10 @@ import { FormSubmitButton } from "@/components/form-submit-button";
 import { saveTrackerSettings } from "@/features/period-tracker/actions";
 import { getNestContext } from "@/lib/nest";
 import { trackerModel, type PeriodCycle, type TrackerSettings } from "@/lib/period-tracker";
-import { safeTimeZone } from "@/lib/date";
+import { formatCalendarDate, safeTimeZone } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 
-const pretty = (value?: string) => value ? new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${value}T00:00:00Z`)) : "Not available";
+const pretty = (value?: string) => value ? formatCalendarDate(value, { month: "short", day: "numeric" }) : "Not available";
 
 export default async function PeriodTrackerPage({ searchParams }: {
   searchParams: Promise<{ success?: string; error?: string; owner?: string }>;

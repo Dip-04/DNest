@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ImageUploadField } from "@/components/image-upload-field";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { BrowserTimeZoneInput } from "@/components/browser-timezone-input";
 import { createMoment } from "@/features/shared/actions";
 import { getNestContext } from "@/lib/nest";
 export default async function Page({
@@ -12,7 +13,7 @@ export default async function Page({
   const context = await getNestContext();
   if (!context) return null;
   const { message } = await searchParams;
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const me = context.nest.members.find((member) => member.user_id === context.userId)?.profiles;
   return (
     <div className="mx-auto max-w-3xl">
       <Link className="muted flex items-center gap-2 text-sm" href="/moments">
@@ -35,7 +36,7 @@ export default async function Page({
         encType="multipart/form-data"
       >
         <input type="hidden" name="nest_id" value={context.nest.id} />
-        <input type="hidden" name="timezone" value={timezone} />
+        <BrowserTimeZoneInput fallback={me?.timezone} />
         <label className="label">
           Title
           <input

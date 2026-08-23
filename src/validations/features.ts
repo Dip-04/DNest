@@ -45,6 +45,7 @@ export const noteSchema = z.object({
   body: z.string().trim().min(1).max(3000),
   theme: z.string().max(40),
   deliver_at: z.iso.datetime({ local: true }).optional().or(z.literal("")),
+  timezone: z.string().min(1).max(80),
 });
 export const meetupSchema = z.object({
   nest_id: uuid,

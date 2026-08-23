@@ -20,6 +20,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import {
   daysTogether,
+  formatCalendarDate,
+  formatDateInTimeZone,
   formatLocalTime,
   safeTimeZone,
   yearsAgoOnThisDay,
@@ -189,10 +191,7 @@ export default async function Home({
             <div>
               <strong className="display text-xl">
                 {context.nest.relationship_start
-                  ? new Intl.DateTimeFormat("en", {
-                      dateStyle: "long",
-                      timeZone: "UTC",
-                    }).format(new Date(context.nest.relationship_start))
+                  ? formatCalendarDate(context.nest.relationship_start)
                   : "Add your date"}
               </strong>
               <p className="muted text-xs">the story began</p>
@@ -310,9 +309,9 @@ export default async function Home({
                 <p className="muted mt-5 flex items-center gap-1 text-xs">
                   <MapPin className="size-3" />
                   {moment.location_name ??
-                    new Intl.DateTimeFormat("en", {
+                    formatDateInTimeZone(moment.moment_at, moment.timezone, {
                       dateStyle: "medium",
-                    }).format(new Date(moment.moment_at))}
+                    })}
                 </p>
               </article>
             ))}

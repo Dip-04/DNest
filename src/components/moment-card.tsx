@@ -1,6 +1,7 @@
 import { CalendarDays, MapPin } from "lucide-react";
 import { MomentActions } from "@/components/moment-actions";
 import type { Moment } from "@/types/database";
+import { formatDateInTimeZone } from "@/lib/date";
 
 export function MomentCard({ moment, imageUrl }: { moment: Moment; imageUrl?: string }) {
   if (imageUrl) {
@@ -40,7 +41,7 @@ export function MomentCard({ moment, imageUrl }: { moment: Moment; imageUrl?: st
 
 function MomentMeta({ moment, light = false }: { moment: Moment; light?: boolean }) {
   return <div className={`mt-5 flex flex-wrap gap-3 text-xs ${light ? "text-white/80" : "muted"}`}>
-    <span className="flex items-center gap-1"><CalendarDays className="size-3" />{new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(moment.moment_at))}</span>
+    <span className="flex items-center gap-1"><CalendarDays className="size-3" />{formatDateInTimeZone(moment.moment_at, moment.timezone, { dateStyle: "medium" })}</span>
     {moment.location_name && <span className="flex items-center gap-1"><MapPin className="size-3" />{moment.location_name}</span>}
   </div>;
 }

@@ -76,3 +76,112 @@ export function isValidTimeZone(timezone: string) {
 export function safeTimeZone(timezone: string | null | undefined) {
   return timezone && isValidTimeZone(timezone) ? timezone : "UTC";
 }
+
+type LocalDateTimeParts = {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+};
+
+function parseLocalDateTime(value: string): LocalDateTimeParts | null {
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value);
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second = "0"] = match;
+  return {
+    year: Number(year),
+    month: Number(month),
+    day: Number(day),
+    hour: Number(hour),
+    minute: Number(minute),
+    second: Number(second),
+  };
+}
+
+export function partsInTimeZone(date: Date, timezone: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: safeTimeZone(timezone),
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  return Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, Number(part.value)]),
+  ) as Record<keyof LocalDateTimeParts, number>;
+}
+
+/** Convert an HTML datetime-local wall time in an IANA zone into UTC storage. */
+export function zonedDateTimeToISOString(value: string, timezone: string) {
+  const requested = parseLocalDateTime(value);
+  if (!requested) throw new RangeError("Invalid local date and time");
+  const zone = safeTimeZone(timezone);
+  const wallClockUtc = Date.UTC(
+    requested.year,
+    requested.month - 1,
+    requested.day,
+    requested.hour,
+    requested.minute,
+    requested.second,
+  );
+  let candidate = wallClockUtc;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const shown = partsInTimeZone(new Date(candidate), zone);
+    const shownAsUtc = Date.UTC(
+      shown.year,
+      shown.month - 1,
+      shown.day,
+      shown.hour,
+      shown.minute,
+      shown.second,
+    );
+    candidate += wallClockUtc - shownAsUtc;
+  }
+  const result = new Date(candidate);
+  const shown = partsInTimeZone(result, zone);
+  if (
+    requested.year !== shown.year ||
+    requested.month !== shown.month ||
+    requested.day !== shown.day ||
+    requested.hour !== shown.hour ||
+    requested.minute !== shown.minute
+  ) {
+    throw new RangeError("That local time does not exist in this timezone");
+  }
+  return result.toISOString();
+}
+
+export function formatDateTimeInput(value: string, timezone: string) {
+  const shown = partsInTimeZone(new Date(value), timezone);
+  return `${shown.year}-${String(shown.month).padStart(2, "0")}-${String(shown.day).padStart(2, "0")}T${String(shown.hour).padStart(2, "0")}:${String(shown.minute).padStart(2, "0")}`;
+}
+
+export function formatDateInTimeZone(
+  value: string | Date,
+  timezone: string,
+  options: Intl.DateTimeFormatOptions,
+) {
+  return new Intl.DateTimeFormat("en", {
+    ...options,
+    timeZone: safeTimeZone(timezone),
+  }).format(typeof value === "string" ? new Date(value) : value);
+}
+
+/** Date-only values have no timezone; noon UTC prevents calendar-day drift. */
+export function formatCalendarDate(
+  value: string,
+  options: Intl.DateTimeFormatOptions = { dateStyle: "long" },
+) {
+  return new Intl.DateTimeFormat("en", {
+    ...options,
+    timeZone: "UTC",
+  }).format(new Date(`${value.slice(0, 10)}T12:00:00Z`));
+}

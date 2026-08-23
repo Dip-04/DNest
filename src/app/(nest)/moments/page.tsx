@@ -7,6 +7,7 @@ import { MomentActions } from "@/components/moment-actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import type { Moment } from "@/types/database";
+import { formatDateInTimeZone, partsInTimeZone } from "@/lib/date";
 export default async function Page({
   searchParams,
 }: {
@@ -40,7 +41,11 @@ export default async function Page({
     }),
   );
   const years = [
-    ...new Set(moments.map((m) => new Date(m.moment_at).getFullYear())),
+    ...new Set(
+      moments.map((moment) =>
+        partsInTimeZone(new Date(moment.moment_at), moment.timezone).year,
+      ),
+    ),
   ];
   return (
     <AnimatedPage>
@@ -123,14 +128,17 @@ export default async function Page({
               <div className="mt-5 border-l-2 border-[var(--rose-soft)] pl-5">
                 {moments.map(
                   (moment, index) =>
-                    new Date(moment.moment_at).getFullYear() === year && (
+                    partsInTimeZone(
+                      new Date(moment.moment_at),
+                      moment.timezone,
+                    ).year === year && (
                       <div className="relative mb-7" key={moment.id}>
                         <span className="absolute -left-[1.62rem] top-2 size-3 rounded-full bg-[var(--rose)]" />
                         <p className="eyebrow">
-                          {new Intl.DateTimeFormat("en", {
+                          {formatDateInTimeZone(moment.moment_at, moment.timezone, {
                             month: "long",
                             day: "numeric",
-                          }).format(new Date(moment.moment_at))}
+                          })}
                         </p>
                         <h3 className="display mt-1 text-3xl">
                           {moment.title}

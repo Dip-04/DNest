@@ -12,6 +12,8 @@ import {
 } from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
+import { BrowserTimeZoneInput } from "@/components/browser-timezone-input";
+import { safeTimeZone } from "@/lib/date";
 export default async function Page({
   searchParams,
 }: {
@@ -20,6 +22,7 @@ export default async function Page({
   const context = await getNestContext();
   if (!context) return null;
   const supabase = await createClient();
+  const me = context.nest.members.find((member) => member.user_id === context.userId)?.profiles;
   const [{ data: meetups }, { data: wishlist }] = await Promise.all([
     supabase
       .from("meetups")
@@ -168,7 +171,7 @@ export default async function Page({
               required
             />
           </label>
-          <input type="hidden" name="timezone" value="UTC" />
+          <BrowserTimeZoneInput fallback={safeTimeZone(me?.timezone)} />
           <label className="label">
             Destination
             <input className="field" name="destination" required />

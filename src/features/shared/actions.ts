@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyPartner } from "@/lib/partner-notifications";
 import { safeNextPath } from "@/lib/route-access";
-import { isValidTimeZone } from "@/lib/date";
+import { isValidTimeZone, zonedDateTimeToISOString } from "@/lib/date";
 import {
   acceptInviteSchema,
   answerSchema,
@@ -44,6 +44,14 @@ function withToast(
   url.searchParams.set(kind, message.slice(0, 280));
   url.searchParams.set("_toast", crypto.randomUUID());
   return `${url.pathname}${url.search}`;
+}
+
+function localDateTimeOrFail(value: string, timezone: string, path: string) {
+  try {
+    return zonedDateTimeToISOString(value, timezone);
+  } catch {
+    fail(path, "That date or time is not valid in your local timezone.");
+  }
 }
 function fail(path: string, message: string): never {
   redirect(withToast(path, "error", message));
@@ -236,6 +244,8 @@ export async function acceptInvite(form: FormData) {
 export async function createMoment(form: FormData) {
   const parsed = momentSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/moments/new", firstIssue(parsed.error));
+  if (!isValidTimeZone(parsed.data.timezone))
+    fail("/moments/new", "Your local timezone could not be detected. Refresh and try again.");
   const files = form
     .getAll("photos")
     .filter((value): value is File => value instanceof File && value.size > 0);
@@ -259,7 +269,7 @@ export async function createMoment(form: FormData) {
     .from("moments")
     .insert({
       ...parsed.data,
-      moment_at: new Date(parsed.data.moment_at).toISOString(),
+      moment_at: localDateTimeOrFail(parsed.data.moment_at, parsed.data.timezone, "/moments/new"),
       created_by: user.id,
       location_name: parsed.data.location_name || null,
       mood: parsed.data.mood || null,
@@ -315,6 +325,8 @@ export async function updateMoment(form: FormData) {
   const parsed = momentSchema.safeParse(Object.fromEntries(form));
   if (!id.success || !parsed.success)
     fail("/moments", "Check the Moment and try again.");
+  if (!isValidTimeZone(parsed.data.timezone))
+    fail(`/moments/${id.data}/edit`, "Choose a valid timezone and try again.");
   const imageValue = form.get("image");
   const image = imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
   const removeImage = form.get("remove_image") === "true";
@@ -331,7 +343,7 @@ export async function updateMoment(form: FormData) {
     .update({
       title: parsed.data.title,
       story: parsed.data.story,
-      moment_at: new Date(parsed.data.moment_at).toISOString(),
+      moment_at: localDateTimeOrFail(parsed.data.moment_at, parsed.data.timezone, `/moments/${id.data}/edit`),
       timezone: parsed.data.timezone,
       category: parsed.data.category,
       location_name: parsed.data.location_name || null,
@@ -472,6 +484,8 @@ export async function thinkOfPartner(form: FormData) {
 export async function createNote(form: FormData) {
   const parsed = noteSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/notes", firstIssue(parsed.error));
+  if (!isValidTimeZone(parsed.data.timezone))
+    fail("/notes", "Your local timezone could not be detected. Refresh and try again.");
   const { supabase, user } = await auth();
   const scheduled = Boolean(parsed.data.deliver_at);
   const { error } = await supabase.from("love_notes").insert({
@@ -482,7 +496,7 @@ export async function createNote(form: FormData) {
     theme: parsed.data.theme,
     status: scheduled ? "scheduled" : "delivered",
     deliver_at: parsed.data.deliver_at
-      ? new Date(parsed.data.deliver_at).toISOString()
+      ? localDateTimeOrFail(parsed.data.deliver_at, parsed.data.timezone, "/notes")
       : new Date().toISOString(),
     delivered_at: scheduled ? null : new Date().toISOString(),
   });
@@ -527,10 +541,12 @@ export async function openLoveNote(form: FormData) {
 export async function createMeetup(form: FormData) {
   const parsed = meetupSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/plans", firstIssue(parsed.error));
+  if (!isValidTimeZone(parsed.data.timezone))
+    fail("/plans", "Your local timezone could not be detected. Refresh and try again.");
   const { supabase, user } = await auth();
   const { error } = await supabase.from("meetups").insert({
     ...parsed.data,
-    starts_at: new Date(parsed.data.starts_at).toISOString(),
+    starts_at: localDateTimeOrFail(parsed.data.starts_at, parsed.data.timezone, "/plans"),
     created_by: user.id,
   });
   if (error) fail("/plans", "The meetup couldn’t be saved.");
@@ -567,13 +583,15 @@ export async function createWishlistItem(form: FormData) {
 export async function createCapsule(form: FormData) {
   const parsed = capsuleSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/us", firstIssue(parsed.error));
+  if (!isValidTimeZone(parsed.data.timezone))
+    fail("/us", "Your local timezone could not be detected. Refresh and try again.");
   const { supabase, user } = await auth();
   const { error } = await supabase.from("time_capsules").insert({
     nest_id: parsed.data.nest_id,
     created_by: user.id,
     title: parsed.data.title,
     encrypted_content: parsed.data.content,
-    unlock_at: new Date(parsed.data.unlock_at).toISOString(),
+    unlock_at: localDateTimeOrFail(parsed.data.unlock_at, parsed.data.timezone, "/us"),
     target_timezone: parsed.data.timezone,
     strict_lock: true,
   });

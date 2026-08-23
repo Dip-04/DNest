@@ -39,6 +39,7 @@ describe("note validation", () => {
         body: "",
         theme: "Love",
         deliver_at: "",
+        timezone: "Asia/Kolkata",
       }).success,
     ).toBe(false));
 });

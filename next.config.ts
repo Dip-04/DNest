@@ -11,7 +11,7 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   {
     key: "Content-Security-Policy",
-    value: `default-src 'self'; script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://tile.openstreetmap.org; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://tile.openstreetmap.org; frame-src 'self' https://www.openstreetmap.org; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; ${isDev ? "" : "upgrade-insecure-requests"}`,
+    value: `default-src 'self'; script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://tile.openstreetmap.org https://*.tile.openstreetmap.org; frame-src 'self' https://www.openstreetmap.org; worker-src 'self'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; ${isDev ? "" : "upgrade-insecure-requests"}`,
   },
 ];
 
@@ -50,6 +50,13 @@ const nextConfig: NextConfig = {
     ];
     return [
       { source: "/(.*)", headers: securityHeaders },
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
       ...privatePrefixes.map((prefix) => ({
         source: `/${prefix}/:path*`,
         headers: [noIndexHeaders],

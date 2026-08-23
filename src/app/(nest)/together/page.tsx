@@ -5,6 +5,7 @@ import { AnimatedPage } from "@/components/animated-page";
 import { saveDateIdea, startChallenge } from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
+import { formatCalendarDate } from "@/lib/date";
 export default async function Page({
   searchParams,
 }: {
@@ -117,9 +118,7 @@ export default async function Page({
             </h3>
             <p className="muted mt-2">
               Started{" "}
-              {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
-                new Date(active[0].starts_on),
-              )}
+              {formatCalendarDate(active[0].starts_on, { dateStyle: "medium" })}
               . Take it gently—there is no streak to protect.
             </p>
           </div>

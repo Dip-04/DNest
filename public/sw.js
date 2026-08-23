@@ -1,4 +1,4 @@
-const CACHE = "dnest-shell-v1";
+const CACHE = "dnest-shell-v2";
 const SHELL = ["/", "/offline", "/icon.svg"];
 self.addEventListener("install", (event) =>
   event.waitUntil(
@@ -21,7 +21,15 @@ self.addEventListener("activate", (event) =>
   ),
 );
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET" || event.request.url.includes("supabase"))
+  const url = new URL(event.request.url);
+  // Cross-origin images (including OpenStreetMap tiles) should be handled by
+  // the browser directly. Intercepting them turns an image load into a
+  // service-worker connection and incorrectly subjects it to connect-src.
+  if (
+    event.request.method !== "GET" ||
+    url.origin !== self.location.origin ||
+    event.request.url.includes("supabase")
+  )
     return;
   event.respondWith(
     fetch(event.request).catch(() =>

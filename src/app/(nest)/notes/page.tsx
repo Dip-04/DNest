@@ -2,10 +2,13 @@ import { Clock3, Heart, LockKeyhole, MailOpen } from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
 import { EmptyState } from "@/components/empty-state";
 import { FormSubmitButton } from "@/components/form-submit-button";
+import { BrowserTimeZoneInput } from "@/components/browser-timezone-input";
+import { LocalDateTime } from "@/components/local-date-time";
 import { createNote, openLoveNote } from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
 import { getNestContext } from "@/lib/nest";
 import type { Profile } from "@/types/database";
+import { safeTimeZone } from "@/lib/date";
 export default async function Page({
   searchParams,
 }: {
@@ -16,6 +19,9 @@ export default async function Page({
   const supabase = await createClient();
   const partner = context.nest.members.find((m) => m.user_id !== context.userId)
     ?.profiles as Profile | undefined;
+  const me = context.nest.members.find((m) => m.user_id === context.userId)
+    ?.profiles as Profile | undefined;
+  const myTimeZone = safeTimeZone(me?.timezone);
   const { data: notes } = await supabase
     .from("love_notes")
     .select(
@@ -45,6 +51,7 @@ export default async function Page({
         >
           <input type="hidden" name="nest_id" value={context.nest.id} />
           <input type="hidden" name="recipient_id" value={partner?.id ?? ""} />
+          <BrowserTimeZoneInput fallback={myTimeZone} />
           <h2 className="display text-3xl">Leave something warm</h2>
           <label className="label">
             Theme
@@ -101,11 +108,19 @@ export default async function Page({
                       <span className="chip">{note.theme}</span>
                       <span className="muted flex items-center gap-1 text-xs">
                         <Clock3 className="size-3" />
-                        {note.status === "scheduled"
-                          ? `Scheduled ${new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(note.deliver_at))}`
-                          : new Intl.DateTimeFormat("en", {
-                              dateStyle: "medium",
-                            }).format(new Date(note.created_at))}
+                        {note.status === "scheduled" ? (
+                          <LocalDateTime
+                            value={note.deliver_at}
+                            fallbackTimeZone={myTimeZone}
+                            timeStyle="short"
+                            prefix="Scheduled "
+                          />
+                        ) : (
+                          <LocalDateTime
+                            value={note.created_at}
+                            fallbackTimeZone={myTimeZone}
+                          />
+                        )}
                       </span>
                     </div>
                     {sealed ? (

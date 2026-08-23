@@ -11,9 +11,16 @@ import { AnimatedPage } from "@/components/animated-page";
 import { EmptyState } from "@/components/empty-state";
 import { MemoryMap } from "@/components/memory-map";
 import { createCapsule, createImportantDate } from "@/features/shared/actions";
-import { daysTogether } from "@/lib/date";
 import { getNestContext } from "@/lib/nest";
 import { createClient } from "@/lib/supabase/server";
+import { BrowserTimeZoneInput } from "@/components/browser-timezone-input";
+import {
+  daysTogether,
+  formatCalendarDate,
+  formatDateInTimeZone,
+  partsInTimeZone,
+  safeTimeZone,
+} from "@/lib/date";
 
 export default async function Page({
   searchParams,
@@ -23,6 +30,8 @@ export default async function Page({
   const context = await getNestContext();
   if (!context) return null;
   const supabase = await createClient();
+  const me = context.nest.members.find((member) => member.user_id === context.userId)?.profiles;
+  const myTimeZone = safeTimeZone(me?.timezone);
   const [moments, wishlist, notes, challenges, meetups, capsules, dates] =
     await Promise.all([
       supabase
@@ -79,10 +88,11 @@ export default async function Page({
   const now = new Date();
   const monthMoments =
     moments.data?.filter((moment) => {
-      const date = new Date(moment.moment_at);
+      const date = partsInTimeZone(new Date(moment.moment_at), myTimeZone);
+      const localNow = partsInTimeZone(now, myTimeZone);
       return (
-        date.getUTCMonth() === now.getUTCMonth() &&
-        date.getUTCFullYear() === now.getUTCFullYear()
+        date.month === localNow.month &&
+        date.year === localNow.year
       );
     }) ?? [];
   const query = await searchParams;
@@ -128,7 +138,7 @@ export default async function Page({
           <div className="flex items-center gap-2">
             <Sparkles className="size-5 text-[var(--rose)]" />
             <span className="eyebrow">
-              Our {new Intl.DateTimeFormat("en", { month: "long" }).format(now)}
+              Our {formatDateInTimeZone(now, myTimeZone, { month: "long" })}
             </span>
           </div>
           <h2 className="display mt-4 text-4xl">A month worth remembering</h2>
@@ -168,7 +178,7 @@ export default async function Page({
             className="capsule-compose surface card grid content-start gap-4"
           >
             <input type="hidden" name="nest_id" value={context.nest.id} />
-            <input type="hidden" name="timezone" value="UTC" />
+            <BrowserTimeZoneInput fallback={myTimeZone} />
             <label className="label">
               Title
               <input
@@ -210,7 +220,7 @@ export default async function Page({
                     <h3 className="display mt-5 text-2xl">{capsule.title}</h3>
                     <p className="muted mt-2 text-sm">
                       {new Date(capsule.unlock_at) > now
-                        ? `Opens ${new Intl.DateTimeFormat("en", { dateStyle: "long" }).format(new Date(capsule.unlock_at))}`
+                        ? `Opens ${formatDateInTimeZone(capsule.unlock_at, myTimeZone, { dateStyle: "long", timeStyle: "short" })}`
                         : "Ready to open ♥"}
                     </p>
                   </Link>
@@ -236,7 +246,7 @@ export default async function Page({
             className="surface card grid content-start gap-4"
           >
             <input type="hidden" name="nest_id" value={context.nest.id} />
-            <input type="hidden" name="timezone" value="UTC" />
+            <BrowserTimeZoneInput fallback={myTimeZone} />
             <label className="label">
               What day is this?
               <input className="field" name="title" required />
@@ -279,10 +289,7 @@ export default async function Page({
                   <div>
                     <h3 className="font-bold">{date.title}</h3>
                     <p className="muted text-sm">
-                      {new Intl.DateTimeFormat("en", {
-                        dateStyle: "long",
-                        timeZone: "UTC",
-                      }).format(new Date(`${date.event_date}T00:00:00Z`))}
+                      {formatCalendarDate(date.event_date)}
                       {date.recurring_yearly ? " · yearly" : ""}
                     </p>
                   </div>
