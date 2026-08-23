@@ -13,6 +13,7 @@ import {
 import { HeroVisual } from "@/components/3d/hero-visual";
 import { MarketingFooter, MarketingHeader } from "@/components/marketing-shell";
 import { JsonLd } from "@/components/seo/json-ld";
+import { IPhonePwaInstall } from "@/components/iphone-pwa-install";
 import { getSiteUrl, siteDescription, siteName } from "@/lib/seo";
 
 const featureCards = [
@@ -98,6 +99,7 @@ export default function LandingPage() {
               <Link className="btn btn-secondary" href="/features">
                 Explore features
               </Link>
+              <IPhonePwaInstall />
             </div>
             <p className="muted mt-5 flex items-center gap-2 text-sm">
               <LockKeyhole className="size-4" />

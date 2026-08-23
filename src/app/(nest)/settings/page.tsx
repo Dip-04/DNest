@@ -21,6 +21,7 @@ import { getNestContext } from "@/lib/nest";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/types/database";
 import { PushSetup } from "@/components/push-setup";
+import { IPhonePwaInstall } from "@/components/iphone-pwa-install";
 import { NativeWidgetSetup } from "@/components/native-widget-setup";
 import { safeTimeZone } from "@/lib/date";
 const kinds = [
@@ -209,6 +210,7 @@ export default async function Page({
           <div className="mt-5 flex flex-wrap gap-3">
             <button className="btn btn-secondary">Save preferences</button>
             <PushSetup />
+            <IPhonePwaInstall />
           </div>
         </form>
         <section className="surface card">

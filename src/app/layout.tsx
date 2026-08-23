@@ -40,6 +40,11 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "DNest",
+    statusBarStyle: "default",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
