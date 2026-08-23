@@ -18,6 +18,14 @@ function escapeHtml(value: string) {
 
 export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerson }) {
   const element = useRef<HTMLDivElement>(null);
+  const meName = me.name;
+  const meAvatarUrl = me.avatarUrl;
+  const meLatitude = me.latitude;
+  const meLongitude = me.longitude;
+  const partnerName = partner.name;
+  const partnerAvatarUrl = partner.avatarUrl;
+  const partnerLatitude = partner.latitude;
+  const partnerLongitude = partner.longitude;
   useEffect(() => {
     if (!element.current) return;
     if (navigator.userAgent.toLowerCase().includes("jsdom")) return;
@@ -30,28 +38,73 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
         maxZoom: 19,
         attribution: "© OpenStreetMap contributors",
       }).addTo(map);
-      const icon = (person: MapPerson, label: string, mine: boolean) => {
-        const image = person.avatarUrl
-          ? `<img src="${escapeHtml(person.avatarUrl)}" alt="" />`
-          : `<span>${escapeHtml(person.name.trim().slice(0, 1).toUpperCase() || "♥")}</span>`;
-        return L.divIcon({
+      const icon = (person: MapPerson, label: string, mine: boolean) =>
+        L.divIcon({
           className: "between-leaflet-marker",
-          html: `<div class="between-marker-avatar ${mine ? "is-me" : ""}">${image}<i>♥</i></div><strong>${escapeHtml(label)}</strong>`,
+          html: `<div class="between-marker-avatar ${mine ? "is-me" : ""}"><span>${escapeHtml(person.name.trim().slice(0, 1).toUpperCase() || "♥")}</span><i>♥</i></div><strong>${escapeHtml(label)}</strong>`,
           iconSize: [76, 92],
           iconAnchor: [38, 32],
         });
+      const addPerson = (
+        person: MapPerson,
+        point: [number, number],
+        label: string,
+        mine: boolean,
+      ) => {
+        const marker = L.marker(point, {
+          icon: icon(person, label, mine),
+          zIndexOffset: 1000,
+        }).addTo(map!);
+        const avatar = marker
+          .getElement()
+          ?.querySelector<HTMLElement>(".between-marker-avatar");
+        if (avatar && person.avatarUrl) {
+          avatar.classList.add("has-photo");
+          avatar.style.backgroundImage = `url(${JSON.stringify(person.avatarUrl)})`;
+        }
       };
-      const mine: [number, number] = [me.latitude, me.longitude];
-      const theirs: [number, number] = [partner.latitude, partner.longitude];
-      L.polyline([mine, theirs], { color: "#2496e8", weight: 5, opacity: 0.9 }).addTo(map);
-      L.marker(mine, { icon: icon(me, "Me", true), zIndexOffset: 1000 }).addTo(map);
-      L.marker(theirs, { icon: icon(partner, partner.name, false), zIndexOffset: 1000 }).addTo(map);
+      const mine: [number, number] = [meLatitude, meLongitude];
+      const theirs: [number, number] = [partnerLatitude, partnerLongitude];
+      L.polyline([mine, theirs], {
+        color: "#2496e8",
+        weight: 5,
+        opacity: 0.92,
+        lineCap: "round",
+      }).addTo(map);
+      addPerson({ name: meName, avatarUrl: meAvatarUrl, latitude: meLatitude, longitude: meLongitude }, mine, "Me", true);
+      addPerson({ name: partnerName, avatarUrl: partnerAvatarUrl, latitude: partnerLatitude, longitude: partnerLongitude }, theirs, partnerName, false);
+      L.tooltip({
+        permanent: true,
+        direction: "center",
+        className: "between-route-label",
+        interactive: false,
+      })
+        .setLatLng([
+          (meLatitude + partnerLatitude) / 2,
+          (meLongitude + partnerLongitude) / 2,
+        ])
+        .setContent(`You → ${escapeHtml(partnerName)}`)
+        .addTo(map);
       const bounds = L.latLngBounds([mine, theirs]);
       if (bounds.getNorthEast().equals(bounds.getSouthWest())) map.setView(mine, 16);
-      else map.fitBounds(bounds, { padding: [55, 55], maxZoom: 14 });
+      else
+        map.fitBounds(bounds, {
+          paddingTopLeft: [90, 105],
+          paddingBottomRight: [90, 125],
+          maxZoom: 13,
+        });
       window.setTimeout(() => map?.invalidateSize(), 50);
     });
     return () => { disposed = true; map?.remove(); };
-  }, [me, partner]);
+  }, [
+    meAvatarUrl,
+    meLatitude,
+    meLongitude,
+    meName,
+    partnerAvatarUrl,
+    partnerLatitude,
+    partnerLongitude,
+    partnerName,
+  ]);
   return <div ref={element} className="between-leaflet-map" aria-label="Map showing both partner locations" />;
 }

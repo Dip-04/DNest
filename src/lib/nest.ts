@@ -4,26 +4,40 @@ import { requireUser } from "@/lib/supabase/server";
 import { normalizeNest, type RawNest } from "@/lib/nest-context";
 import type { NestContext } from "@/types/database";
 
+const coreNestSelect =
+  "id,name,relationship_start,created_by,nest_members(user_id,profiles(id,display_name,avatar_path,birthday,timezone,city,latitude,longitude,location_sharing,location_updated_at))";
+const enrichedNestSelect =
+  "id,name,relationship_start,created_by,nest_members(user_id,profiles(id,display_name,gender_identity,avatar_path,birthday,timezone,city,latitude,longitude,location_sharing,location_updated_at,location_accuracy_m))";
+
 export const getNestContext = cache(
   async (): Promise<{ userId: string; nest: NestContext } | null> => {
     const session = await requireUser();
     if (!session) return null;
-    const { data: membership } = await session.supabase
+    const { data: membership, error: membershipError } = await session.supabase
       .from("nest_members")
       .select("nest_id")
       .eq("user_id", session.user.id)
       .eq("status", "active")
       .maybeSingle();
-    if (!membership) return null;
-    const { data, error } = await session.supabase
+    if (membershipError || !membership) return null;
+    const enriched = await session.supabase
       .from("nests")
-      .select(
-        "id,name,relationship_start,created_by,nest_members(user_id,profiles(id,display_name,gender_identity,avatar_path,birthday,timezone,city,latitude,longitude,location_sharing,location_updated_at,location_accuracy_m))",
-      )
+      .select(enrichedNestSelect)
       .eq("id", membership.nest_id)
       .single();
-    if (error || !data) return null;
-    const raw = data as unknown as RawNest;
+    let data: unknown = enriched.data;
+    if (enriched.error || !data) {
+      // Optional profile columns may lag behind an application deployment.
+      // A schema mismatch must never make a valid Nest membership look absent.
+      const fallback = await session.supabase
+        .from("nests")
+        .select(coreNestSelect)
+        .eq("id", membership.nest_id)
+        .single();
+      if (fallback.error || !fallback.data) return null;
+      data = fallback.data;
+    }
+    const raw = data as RawNest;
     return { userId: session.user.id, nest: normalizeNest(raw) };
   },
 );

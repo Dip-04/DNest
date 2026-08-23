@@ -893,7 +893,13 @@ a {
   box-shadow: 0 7px 18px rgb(45 32 39 / 18%);
 }
 .between-marker-avatar.is-me { background: #f8c9d5; }
-.between-marker-avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.between-marker-avatar.has-photo {
+  background-color: #f8c9d5;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.between-marker-avatar.has-photo > span { visibility: hidden; }
 .between-marker-avatar i {
   position: absolute;
   right: -0.4rem;
@@ -907,6 +913,18 @@ a {
 .between-us-widget .leaflet-control-zoom { border: 0; box-shadow: 0 5px 18px rgb(30 24 28 / 22%); }
 .between-us-widget .leaflet-control-zoom a { color: #30242b; }
 .between-us-widget .leaflet-control-attribution { max-width: 70%; font-size: 0.55rem; }
+.between-route-label {
+  margin: 0 !important;
+  padding: 0.24rem 0.5rem !important;
+  border: 1px solid rgb(255 255 255 / 75%) !important;
+  border-radius: 999px !important;
+  background: rgb(255 255 255 / 90%) !important;
+  color: #3c3037 !important;
+  font-size: 0.65rem !important;
+  font-weight: 900 !important;
+  box-shadow: 0 5px 15px rgb(28 20 25 / 16%) !important;
+}
+.between-route-label::before { display: none !important; }
 .between-map-frame,
 .between-map-tint,
 .between-map-route {
@@ -1001,7 +1019,7 @@ a {
   border: 1px solid var(--border);
   border-radius: 1.1rem;
   background: rgb(255 255 255 / 92%);
-  color: var(--foreground);
+  color: #30242b;
   box-shadow: 0 8px 24px rgb(45 32 39 / 18%);
   backdrop-filter: blur(10px);
 }
@@ -1292,7 +1310,7 @@ a {
 .dnest-loader {
   position: fixed;
   z-index: 2000;
-  top: max(1rem, env(safe-area-inset-top));
+  bottom: max(1rem, env(safe-area-inset-bottom));
   left: 50%;
   display: flex;
   align-items: center;
@@ -1319,6 +1337,9 @@ a {
 @keyframes dnest-heart-pulse { 50% { transform: scale(1.2) translateY(-0.08rem); } }
 @media (prefers-reduced-motion: reduce) {
   .dnest-loader, .dnest-loader-nest > span, .dnest-loader-heart { animation: none; }
+}
+@media (max-width: 1023px) {
+  .dnest-loader { bottom: max(6.4rem, calc(env(safe-area-inset-bottom) + 5.5rem)); }
 }
 @media (max-width: 520px) {
   .period-day { min-height: 3.25rem; border-radius: 0.75rem; }
