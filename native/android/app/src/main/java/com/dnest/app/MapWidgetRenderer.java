@@ -211,7 +211,7 @@ final class MapWidgetRenderer {
             connection.setReadTimeout(6_000);
             connection.setRequestProperty(
                     "User-Agent",
-                    "DNest/1.2 (https://dnest-app.vercel.app)"
+                    "DNest/1.4 (https://dnest-app.vercel.app)"
             );
             if (connection.getResponseCode() != 200) return null;
             Bitmap bitmap = BitmapFactory.decodeStream(connection.getInputStream());

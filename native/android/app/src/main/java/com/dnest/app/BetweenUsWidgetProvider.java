@@ -41,7 +41,12 @@ public final class BetweenUsWidgetProvider extends AppWidgetProvider {
             views.setImageViewResource(R.id.widget_map, R.drawable.route_line);
             if (state == null) {
                 views.setTextViewText(R.id.widget_title, "Between Us");
-                views.setTextViewText(R.id.widget_people, "Tap here, then connect in DNest Settings");
+                views.setTextViewText(
+                        R.id.widget_people,
+                        WidgetPreferences.configured(context)
+                                ? "Could not refresh · tap to reconnect"
+                                : "Tap once to connect securely"
+                );
                 views.setTextViewText(R.id.widget_distance, "—");
             } else {
                 String partner = state.partner() == null ? "Your partner" : state.partner().name();
@@ -56,7 +61,10 @@ public final class BetweenUsWidgetProvider extends AppWidgetProvider {
                 Bitmap map = MapWidgetRenderer.render(context, state);
                 if (map != null) views.setImageViewBitmap(R.id.widget_map, map);
             }
-            views.setOnClickPendingIntent(R.id.widget_root, homeIntent(context));
+            views.setOnClickPendingIntent(
+                    R.id.widget_root,
+                    state == null ? connectIntent(context) : homeIntent(context)
+            );
             manager.updateAppWidget(id, views);
         }
     }
@@ -69,6 +77,19 @@ public final class BetweenUsWidgetProvider extends AppWidgetProvider {
         return PendingIntent.getActivity(
                 context,
                 100,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+    }
+
+    private static PendingIntent connectIntent(Context context) {
+        Intent intent = new Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://dnest-app.vercel.app/connect-android")
+        );
+        return PendingIntent.getActivity(
+                context,
+                101,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
