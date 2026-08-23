@@ -31,7 +31,8 @@ export async function proxy(request: NextRequest) {
   const privatePage = isPrivatePage(pathname);
   const protectedApi = isProtectedApi(pathname);
   const guestOnlyPage = isGuestOnlyPage(pathname);
-  if (!privatePage && !protectedApi && !guestOnlyPage)
+  const defaultEntryPage = pathname === "/";
+  if (!privatePage && !protectedApi && !guestOnlyPage && !defaultEntryPage)
     return NextResponse.next();
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -106,7 +107,7 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (guestOnlyPage)
+  if (guestOnlyPage || defaultEntryPage)
     return copyCookies(
       response,
       NextResponse.redirect(new URL("/home", request.url)),

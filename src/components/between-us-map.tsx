@@ -31,6 +31,7 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
     if (navigator.userAgent.toLowerCase().includes("jsdom")) return;
     let disposed = false;
     let map: import("leaflet").Map | undefined;
+    const routeController = new AbortController();
     void import("leaflet").then((L) => {
       if (disposed || !element.current) return;
       map = L.map(element.current, { zoomControl: true, attributionControl: true });
@@ -77,15 +78,16 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
           paddingBottomRight: [90, 125],
           maxZoom: 13,
         });
-      L.polyline([mine, theirs], {
+      const directLine = L.polyline([mine, theirs], {
         color: "#2496e8",
-        weight: 5,
-        opacity: 0.92,
+        weight: 4,
+        opacity: 0.55,
+        dashArray: "8 9",
         lineCap: "round",
       }).addTo(map);
       addPerson({ name: meName, avatarUrl: meAvatarUrl, latitude: meLatitude, longitude: meLongitude }, mine, "Me", true);
       addPerson({ name: partnerName, avatarUrl: partnerAvatarUrl, latitude: partnerLatitude, longitude: partnerLongitude }, theirs, partnerName, false);
-      L.tooltip({
+      const routeLabel = L.tooltip({
         permanent: true,
         direction: "center",
         className: "between-route-label",
@@ -97,9 +99,39 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
         ])
         .setContent(`You → ${escapeHtml(partnerName)}`)
         .addTo(map);
+      void fetch("/api/between-route", {
+        cache: "no-store",
+        signal: routeController.signal,
+      })
+        .then(async (response) => {
+          if (!response.ok) return null;
+          return response.json() as Promise<{ coordinates?: [number, number][] }>;
+        })
+        .then((route) => {
+          if (disposed || !map || !route?.coordinates || route.coordinates.length < 2)
+            return;
+          directLine.remove();
+          L.polyline(route.coordinates, {
+            color: "#2496e8",
+            weight: 5,
+            opacity: 0.94,
+            lineCap: "round",
+            lineJoin: "round",
+          }).addTo(map);
+          const middle = route.coordinates[Math.floor(route.coordinates.length / 2)];
+          routeLabel
+            .setLatLng(middle)
+            .setContent(`Road route · You → ${escapeHtml(partnerName)}`);
+          map.fitBounds(L.latLngBounds(route.coordinates), {
+            paddingTopLeft: [90, 105],
+            paddingBottomRight: [90, 125],
+            maxZoom: 13,
+          });
+        })
+        .catch(() => undefined);
       window.setTimeout(() => map?.invalidateSize(), 50);
     });
-    return () => { disposed = true; map?.remove(); };
+    return () => { disposed = true; routeController.abort(); map?.remove(); };
   }, [
     meAvatarUrl,
     meLatitude,
