@@ -99,6 +99,14 @@ export default async function Home({
               ? `${partner.display_name}’s time is ${formatLocalTime(partner.timezone)}${distance != null ? ` · ${distance.toLocaleString()} km apart` : ""}`
               : "Your Nest is ready for the person you love."}
           </p>
+          {partner && distance == null && (
+            <p className="mt-2 text-xs text-[var(--rose-deep)]">
+              <Link className="underline" href="/settings">
+                Add your current location
+              </Link>{" "}
+              and ask your partner to do the same to show your distance.
+            </p>
+          )}
         </div>
         <Link
           href="/notifications"
