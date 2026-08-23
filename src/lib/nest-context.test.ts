@@ -6,6 +6,7 @@ describe("normalizeNest", () => {
     const profile = {
       id: "user-1",
       display_name: "Partner",
+      gender_identity: null,
       avatar_path: null,
       birthday: null,
       timezone: "UTC",
@@ -14,6 +15,7 @@ describe("normalizeNest", () => {
       longitude: null,
       location_sharing: false,
       location_updated_at: null,
+      location_accuracy_m: null,
     };
     const raw: RawNest = {
       id: "nest-1",

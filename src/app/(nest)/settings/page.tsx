@@ -136,6 +136,26 @@ export default async function Page({
             />
           </label>
           <label className="label">
+            Gender identity <span className="font-normal">(optional)</span>
+            <input
+              className="field"
+              name="gender_identity"
+              defaultValue={me.gender_identity ?? ""}
+              list="gender-identities"
+              maxLength={60}
+              placeholder="Choose or describe your identity"
+            />
+            <datalist id="gender-identities">
+              <option value="Woman" />
+              <option value="Man" />
+              <option value="Non-binary" />
+              <option value="Genderfluid" />
+              <option value="Agender" />
+              <option value="Questioning" />
+              <option value="Prefer not to say" />
+            </datalist>
+          </label>
+          <label className="label">
             Time zone
             <input
               className="field"

@@ -10,6 +10,7 @@ export const signInSchema = z.object({
 });
 export const signUpSchema = z.object({
   name: z.string().trim().min(2).max(60),
+  gender_identity: z.string().trim().max(60).optional().or(z.literal("")),
   email: emailSchema,
   password: passwordSchema,
 });

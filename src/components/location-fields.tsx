@@ -56,6 +56,7 @@ export function LocationFields({
         const form = new FormData();
         form.set("latitude", coords.latitude.toString());
         form.set("longitude", coords.longitude.toString());
+        form.set("accuracy", coords.accuracy.toString());
         const result = await saveCurrentLocation(form).catch(() => ({
           ok: false,
           message: "Your location could not be saved.",
@@ -71,7 +72,7 @@ export function LocationFields({
           "Location permission was not granted. Allow it and try again.",
         );
       },
-      { enableHighAccuracy: false, timeout: 12_000, maximumAge: 300_000 },
+      { enableHighAccuracy: true, timeout: 30_000, maximumAge: 0 },
     );
   }
 

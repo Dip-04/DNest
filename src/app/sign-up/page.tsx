@@ -24,6 +24,14 @@ export default async function Page({
           type: "text",
           autoComplete: "name",
         },
+        {
+          name: "gender_identity",
+          label: "Gender identity (optional)",
+          type: "text",
+          autoComplete: "off",
+          placeholder: "Woman, man, non-binary, or self-describe",
+          required: false,
+        },
         { name: "email", label: "Email", type: "email", autoComplete: "email" },
         {
           name: "password",

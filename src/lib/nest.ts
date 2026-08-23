@@ -18,7 +18,7 @@ export const getNestContext = cache(
     const { data, error } = await session.supabase
       .from("nests")
       .select(
-        "id,name,relationship_start,created_by,nest_members(user_id,profiles(id,display_name,avatar_path,birthday,timezone,city,latitude,longitude,location_sharing,location_updated_at))",
+        "id,name,relationship_start,created_by,nest_members(user_id,profiles(id,display_name,gender_identity,avatar_path,birthday,timezone,city,latitude,longitude,location_sharing,location_updated_at,location_accuracy_m))",
       )
       .eq("id", membership.nest_id)
       .single();

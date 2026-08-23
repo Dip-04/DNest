@@ -147,6 +147,7 @@ export default async function Home({
             latitude: me.latitude,
             longitude: me.longitude,
             locationSharing: me.location_sharing,
+            accuracy: me.location_accuracy_m,
           }}
           initialPartner={{
             id: partner.id,
@@ -157,6 +158,7 @@ export default async function Home({
             latitude: partner.latitude,
             longitude: partner.longitude,
             locationSharing: partner.location_sharing,
+            accuracy: partner.location_accuracy_m,
           }}
         />
       )}

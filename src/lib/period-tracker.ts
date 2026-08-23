@@ -10,6 +10,7 @@ export type TrackerSettings = {
   default_cycle_length: number;
   default_period_length: number;
   timezone: string;
+  share_with_partner?: boolean;
 };
 
 const DAY = 86_400_000;

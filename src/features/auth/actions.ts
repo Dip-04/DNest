@@ -69,7 +69,10 @@ export async function signUp(formData: FormData) {
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { display_name: parsed.data.name },
+      data: {
+        display_name: parsed.data.name,
+        gender_identity: parsed.data.gender_identity || null,
+      },
       emailRedirectTo: authCallbackUrl(),
     },
   });

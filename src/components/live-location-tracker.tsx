@@ -32,11 +32,12 @@ export function LiveLocationTracker() {
           const form = new FormData();
           form.set("latitude", coords.latitude.toString());
           form.set("longitude", coords.longitude.toString());
+          form.set("accuracy", coords.accuracy.toString());
           form.set("silent", "true");
           void saveCurrentLocation(form);
         },
         () => stop(),
-        { enableHighAccuracy: false, timeout: 15_000, maximumAge: 30_000 },
+        { enableHighAccuracy: true, timeout: 30_000, maximumAge: 5_000 },
       );
     };
 

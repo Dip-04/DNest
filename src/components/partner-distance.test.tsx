@@ -68,11 +68,8 @@ describe("partner distance status", () => {
     expect(
       screen.getByLabelText("Map showing both partner locations"),
     ).toBeVisible();
-    expect(
-      screen.getByTitle("OpenStreetMap showing both partner locations"),
-    ).toHaveAttribute(
-      "src",
-      expect.stringContaining("openstreetmap.org/export/embed.html"),
+    expect(screen.getByLabelText("Map showing both partner locations")).toHaveClass(
+      "between-leaflet-map",
     );
     expect(screen.getByText("Partner · 1:18 PM")).toBeVisible();
   });

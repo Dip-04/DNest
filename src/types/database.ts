@@ -12,6 +12,7 @@ export type WishlistStatus = "dream" | "planning" | "done";
 export interface Profile {
   id: string;
   display_name: string;
+  gender_identity: string | null;
   avatar_path: string | null;
   birthday: string | null;
   timezone: string;
@@ -20,6 +21,7 @@ export interface Profile {
   longitude: number | null;
   location_sharing: boolean;
   location_updated_at: string | null;
+  location_accuracy_m: number | null;
 }
 export interface Moment {
   id: string;

@@ -2,17 +2,19 @@
 
 import { ChevronLeft, ChevronRight, Droplets, Sparkles, X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { deletePeriodCycle, savePeriodCycle, togglePeriodDay } from "@/features/period-tracker/actions";
+import { deletePeriodCycle, savePeriodCycle, savePeriodDayMood, togglePeriodDay } from "@/features/period-tracker/actions";
 import { addDays, type PeriodCycle } from "@/lib/period-tracker";
 
 type Prediction = { start: string; end: string; ovulation: string; fertileStart: string; fertileEnd: string };
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export function PeriodCalendar({ cycles, predictions, today, defaultPeriodLength }: {
+export function PeriodCalendar({ cycles, predictions, today, defaultPeriodLength, readOnly = false, moods = [] }: {
   cycles: PeriodCycle[];
   predictions: Prediction[];
   today: string;
   defaultPeriodLength: number;
+  readOnly?: boolean;
+  moods?: { local_date: string; mood: string; note: string | null }[];
 }) {
   const now = new Date(`${today}T00:00:00Z`);
   const [month, setMonth] = useState(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)));
@@ -53,7 +55,7 @@ export function PeriodCalendar({ cycles, predictions, today, defaultPeriodLength
             aria-label={`${date}${state.actual ? ", logged period" : state.predicted ? ", predicted period" : state.ovulation ? ", estimated ovulation" : state.fertile ? ", estimated fertile window" : ""}`}
             className={`period-day ${date === today ? "is-today" : ""} ${date === selected ? "is-selected" : ""} ${state.actual ? "is-period" : ""} ${state.predicted ? "is-predicted" : ""} ${state.fertile ? "is-fertile" : ""}`}>
             <span>{Number(date.slice(-2))}</span>
-            <span className="period-day-marks" aria-hidden>{state.actual && <Droplets />}{state.predicted && <span>◌</span>}{state.fertile && <span>♡</span>}{state.ovulation && <Sparkles />}</span>
+            <span className="period-day-marks" aria-hidden>{state.actual && <Droplets />}{state.predicted && <span>◌</span>}{state.fertile && <span>♡</span>}{state.ovulation && <Sparkles />}{moods.some((item) => item.local_date === date) && <span>●</span>}</span>
           </button>;
         })() : <span key={`blank-${index}`} />)}
       </div>
@@ -65,6 +67,7 @@ export function PeriodCalendar({ cycles, predictions, today, defaultPeriodLength
       <button className="mobile-more-backdrop" type="button" aria-label="Close date editor" onClick={() => setSelected(undefined)} />
       <section className="period-date-sheet surface" role="dialog" aria-modal="true" aria-label={`Edit ${selected}`}>
         <header className="flex items-start justify-between gap-3"><div><span className="eyebrow">Selected date</span><h2 className="display mt-1 text-3xl">{new Intl.DateTimeFormat("en", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${selected}T00:00:00Z`))}</h2></div><button className="btn btn-secondary !px-3" type="button" onClick={() => setSelected(undefined)} aria-label="Close"><X /></button></header>
+        {readOnly ? <div className="muted mt-5 rounded-2xl bg-[var(--surface-muted)] p-4 text-sm">This tracker is shared with you as view-only.{moods.find((item) => item.local_date === selected) && <p className="mt-2 font-bold">Mood: {moods.find((item) => item.local_date === selected)?.mood}</p>}</div> : <>
         <form action={togglePeriodDay} className="mt-5"><input type="hidden" name="date" value={selected} /><button className="btn btn-secondary w-full"><Droplets className="size-4" />{selectedCycle ? "Remove this period day" : "Add this period day"}</button></form>
         <form action={savePeriodCycle} className="mt-5 grid gap-4">
           {selectedCycle && <input type="hidden" name="id" value={selectedCycle.id} />}
@@ -76,6 +79,13 @@ export function PeriodCalendar({ cycles, predictions, today, defaultPeriodLength
           <input type="hidden" name="id" value={selectedCycle.id} /><input type="hidden" name="confirm" value="delete" />
           <button className="btn btn-danger w-full">Delete entire cycle</button>
         </form>}
+        {selectedCycle && <form action={savePeriodDayMood} className="mt-5 grid gap-3 rounded-2xl border border-[var(--border)] p-4">
+          <input type="hidden" name="date" value={selected} />
+          <label className="label">How did this day feel?<select className="field" name="mood" defaultValue={moods.find((item) => item.local_date === selected)?.mood ?? "Tender"}>{["Tender", "Crampy", "Tired", "Low", "Calm", "Energetic", "Emotional", "Okay", "Other"].map((mood) => <option key={mood}>{mood}</option>)}</select></label>
+          <label className="label">Private note (optional)<input className="field" name="note" maxLength={300} defaultValue={moods.find((item) => item.local_date === selected)?.note ?? ""} /></label>
+          <button className="btn btn-secondary">Save day mood</button>
+        </form>}
+        </>}
       </section>
     </>}
   </>;

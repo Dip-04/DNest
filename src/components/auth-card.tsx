@@ -22,6 +22,7 @@ export function AuthCard({
     type: string;
     autoComplete: string;
     placeholder?: string;
+    required?: boolean;
   }[];
   hiddenFields?: Record<string, string>;
   footer?: React.ReactNode;
@@ -79,7 +80,7 @@ export function AuthCard({
                 {field.label}
                 <input
                   className="field"
-                  required
+                  required={field.required !== false}
                   name={field.name}
                   type={field.type}
                   autoComplete={field.autoComplete}

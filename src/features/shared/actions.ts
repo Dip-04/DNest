@@ -873,6 +873,7 @@ export async function saveCurrentLocation(form: FormData): Promise<{
 }> {
   const latitude = Number(form.get("latitude"));
   const longitude = Number(form.get("longitude"));
+  const accuracy = Number(form.get("accuracy"));
   if (
     !Number.isFinite(latitude) ||
     Math.abs(latitude) > 90 ||
@@ -890,6 +891,8 @@ export async function saveCurrentLocation(form: FormData): Promise<{
       longitude,
       location_sharing: true,
       location_updated_at: new Date().toISOString(),
+      location_accuracy_m:
+        Number.isFinite(accuracy) && accuracy >= 0 ? accuracy : null,
     })
     .eq("id", user.id);
   if (error) {
@@ -944,6 +947,8 @@ export async function updateProfile(form: FormData) {
       .trim()
       .slice(0, 100) || null;
   const birthday = String(form.get("birthday") ?? "") || null;
+  const genderIdentity =
+    String(form.get("gender_identity") ?? "").trim().slice(0, 60) || null;
   const latitudeValue = String(form.get("latitude") ?? "").trim();
   const longitudeValue = String(form.get("longitude") ?? "").trim();
   const latitude = latitudeValue ? Number(latitudeValue) : null;
@@ -1002,6 +1007,7 @@ export async function updateProfile(form: FormData) {
       timezone,
       city,
       birthday,
+      gender_identity: genderIdentity,
       latitude,
       longitude,
       ...(uploadedPath

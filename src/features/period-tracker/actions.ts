@@ -33,9 +33,37 @@ export async function saveTrackerSettings(form: FormData) {
     default_cycle_length: cycle,
     default_period_length: period,
     timezone,
+    share_with_partner: form.get("share_with_partner") === "on",
   });
   if (error) redirect("/period-tracker?error=Tracker+settings+could+not+be+saved.");
   done("Tracker settings saved.");
+}
+
+export async function savePeriodDayMood(form: FormData) {
+  const selected = day(form.get("date"));
+  const mood = String(form.get("mood") ?? "").trim().slice(0, 40);
+  const note = String(form.get("note") ?? "").trim().slice(0, 300) || null;
+  if (!selected || !mood)
+    redirect("/period-tracker?error=Choose+a+period-day+mood.");
+  const { supabase, user } = await session();
+  const { data: cycle } = await supabase
+    .from("period_cycles")
+    .select("id")
+    .eq("user_id", user.id)
+    .lte("start_date", selected)
+    .gte("end_date", selected)
+    .maybeSingle();
+  if (!cycle)
+    redirect("/period-tracker?error=Mood+can+only+be+added+to+a+logged+period+day.");
+  const { error } = await supabase.from("period_day_moods").upsert({
+    user_id: user.id,
+    local_date: selected,
+    mood,
+    note,
+  });
+  if (error)
+    redirect("/period-tracker?error=That+mood+could+not+be+saved.");
+  done("Period-day mood saved.");
 }
 
 export async function savePeriodCycle(form: FormData) {
