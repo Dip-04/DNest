@@ -10,18 +10,22 @@ import {
   DesktopAppNavigation,
   MobileAppNavigation,
 } from "@/components/app-navigation";
+import { ProfileTimezoneSync } from "@/components/profile-timezone-sync";
 
 export function AppShell({
   children,
   nestName,
+  timezone,
 }: {
   children: React.ReactNode;
   nestName: string;
+  timezone: string;
 }) {
   return (
     <div className="app-shell min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
       <ServiceWorkerRegistration />
       <LiveLocationTracker />
+      <ProfileTimezoneSync storedTimezone={timezone} />
       <aside className="app-sidebar fixed inset-y-0 left-0 z-20 hidden w-[17rem] flex-col p-6 lg:flex">
         <Link
           href="/home"

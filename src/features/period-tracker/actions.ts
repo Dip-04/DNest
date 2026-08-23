@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
 import { addDays, dayDifference } from "@/lib/period-tracker";
 import { isValidTimeZone } from "@/lib/date";
+import { canEditPeriodTracker } from "@/lib/period-access";
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 function done(message: string): never {
@@ -14,6 +15,17 @@ function done(message: string): never {
 async function session() {
   const value = await requireUser();
   if (!value) redirect("/sign-in");
+  return value;
+}
+async function editableSession() {
+  const value = await session();
+  const { data: profile } = await value.supabase
+    .from("profiles")
+    .select("gender_identity")
+    .eq("id", value.user.id)
+    .single();
+  if (!canEditPeriodTracker(profile?.gender_identity))
+    redirect("/period-tracker?error=Only+women+can+edit+period+information.");
   return value;
 }
 function day(value: FormDataEntryValue | null) {
@@ -27,7 +39,7 @@ export async function saveTrackerSettings(form: FormData) {
   const timezone = String(form.get("timezone") ?? "UTC");
   if (cycle < 20 || cycle > 45 || period < 1 || period > 15 || !isValidTimeZone(timezone))
     redirect("/period-tracker?error=Check+your+cycle+defaults+and+timezone.");
-  const { supabase, user } = await session();
+  const { supabase, user } = await editableSession();
   const { error } = await supabase.from("period_tracker_settings").upsert({
     user_id: user.id,
     default_cycle_length: cycle,
@@ -45,7 +57,7 @@ export async function savePeriodDayMood(form: FormData) {
   const note = String(form.get("note") ?? "").trim().slice(0, 300) || null;
   if (!selected || !mood)
     redirect("/period-tracker?error=Choose+a+period-day+mood.");
-  const { supabase, user } = await session();
+  const { supabase, user } = await editableSession();
   const { data: cycle } = await supabase
     .from("period_cycles")
     .select("id")
@@ -72,7 +84,7 @@ export async function savePeriodCycle(form: FormData) {
   const id = String(form.get("id") ?? "");
   if (!start || !end || end < start || dayDifference(start, end) > 14)
     redirect("/period-tracker?error=Choose+a+valid+period+of+15+days+or+less.");
-  const { supabase, user } = await session();
+  const { supabase, user } = await editableSession();
   const { data: previous } = await supabase.from("period_cycles").select("start_date")
     .eq("user_id", user.id).lt("start_date", start).order("start_date", { ascending: false }).limit(1).maybeSingle();
   const values = {
@@ -92,7 +104,7 @@ export async function savePeriodCycle(form: FormData) {
 export async function deletePeriodCycle(form: FormData) {
   const id = String(form.get("id") ?? "");
   if (!id || form.get("confirm") !== "delete") redirect("/period-tracker?error=Deletion+was+not+confirmed.");
-  const { supabase, user } = await session();
+  const { supabase, user } = await editableSession();
   const { error } = await supabase.from("period_cycles").delete().eq("id", id).eq("user_id", user.id);
   if (error) redirect("/period-tracker?error=That+cycle+could+not+be+deleted.");
   done("Cycle deleted. Predictions recalculated.");
@@ -101,7 +113,7 @@ export async function deletePeriodCycle(form: FormData) {
 export async function togglePeriodDay(form: FormData) {
   const selected = day(form.get("date"));
   if (!selected) redirect("/period-tracker?error=Choose+a+valid+date.");
-  const { supabase, user } = await session();
+  const { supabase, user } = await editableSession();
   const { data: cycle } = await supabase.from("period_cycles").select("*")
     .eq("user_id", user.id).lte("start_date", selected).gte("end_date", selected).maybeSingle();
   if (!cycle) {

@@ -993,6 +993,13 @@ export async function stopCurrentLocation(): Promise<{
   return { ok: true, message: "Live location is off." };
 }
 
+export async function syncProfileTimezone(timezone: string) {
+  if (!isValidTimeZone(timezone)) return;
+  const { supabase, user } = await auth();
+  await supabase.from("profiles").update({ timezone }).eq("id", user.id).neq("timezone", timezone);
+  revalidatePath("/", "layout");
+}
+
 export async function updateProfile(form: FormData) {
   const name = String(form.get("display_name") ?? "")
     .trim()

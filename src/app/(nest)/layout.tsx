@@ -11,5 +11,6 @@ export default async function Layout({
 }) {
   const context = await getNestContext();
   if (!context) redirect("/onboarding");
-  return <AppShell nestName={context.nest.name}>{children}</AppShell>;
+  const me = context.nest.members.find((member) => member.user_id === context.userId)?.profiles;
+  return <AppShell nestName={context.nest.name} timezone={me?.timezone ?? "UTC"}>{children}</AppShell>;
 }

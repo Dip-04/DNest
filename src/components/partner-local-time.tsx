@@ -11,7 +11,9 @@ export function PartnerLocalTime({ name, timezone, city, initialTime }: {
 }) {
   const [time, setTime] = useState(initialTime);
   useEffect(() => {
-    const update = () => setTime(formatLocalTime(timezone));
+    const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const localZone = timezone === "UTC" && detected ? detected : timezone;
+    const update = () => setTime(formatLocalTime(localZone));
     const timer = window.setInterval(update, 30_000);
     update();
     return () => window.clearInterval(timer);

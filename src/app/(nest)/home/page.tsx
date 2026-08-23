@@ -17,6 +17,7 @@ import { PartnerLocalTime } from "@/components/partner-local-time";
 import { NotificationCountBadge } from "@/components/notification-count-badge";
 import { ThinkingOfYouButton } from "@/components/thinking-of-you-button";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getNestContext } from "@/lib/nest";
 import {
   daysTogether,
@@ -100,10 +101,11 @@ export default async function Home({
   }).format(new Date());
   const hour = Number(greeting);
   const daypart = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  const avatarClient = createAdminClient() ?? supabase;
   const [myAvatarUrl, partnerAvatarUrl] = await Promise.all(
     [me?.avatar_path, partner?.avatar_path].map(async (path) =>
       path
-        ? (await supabase.storage.from("avatars").createSignedUrl(path, 900)).data
+        ? (await avatarClient.storage.from("avatars").createSignedUrl(path, 86_400)).data
             ?.signedUrl
         : undefined,
     ),
@@ -148,6 +150,7 @@ export default async function Home({
             localTime: formatLocalTime(me.timezone),
             timezone: safeTimeZone(me.timezone),
             avatarUrl: myAvatarUrl,
+            avatarPath: me.avatar_path,
             latitude: me.latitude,
             longitude: me.longitude,
             locationSharing: me.location_sharing,
@@ -159,6 +162,7 @@ export default async function Home({
             localTime: formatLocalTime(partner.timezone),
             timezone: safeTimeZone(partner.timezone),
             avatarUrl: partnerAvatarUrl,
+            avatarPath: partner.avatar_path,
             latitude: partner.latitude,
             longitude: partner.longitude,
             locationSharing: partner.location_sharing,

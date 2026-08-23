@@ -36,7 +36,7 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
       map = L.map(element.current, { zoomControl: true, attributionControl: true });
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: "© OpenStreetMap contributors",
+        attribution: "Not found",
       }).addTo(map);
       const icon = (person: MapPerson, label: string, mine: boolean) =>
         L.divIcon({
@@ -54,17 +54,29 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
         const marker = L.marker(point, {
           icon: icon(person, label, mine),
           zIndexOffset: 1000,
-        }).addTo(map!);
-        const avatar = marker
-          .getElement()
-          ?.querySelector<HTMLElement>(".between-marker-avatar");
-        if (avatar && person.avatarUrl) {
-          avatar.classList.add("has-photo");
-          avatar.style.backgroundImage = `url(${JSON.stringify(person.avatarUrl)})`;
-        }
+        });
+        const applyAvatar = () => {
+          const avatar = marker
+            .getElement()
+            ?.querySelector<HTMLElement>(".between-marker-avatar");
+          if (avatar && person.avatarUrl) {
+            avatar.classList.add("has-photo");
+            avatar.style.backgroundImage = `url(${JSON.stringify(person.avatarUrl)})`;
+          }
+        };
+        marker.on("add", applyAvatar).addTo(map!);
+        applyAvatar();
       };
       const mine: [number, number] = [meLatitude, meLongitude];
       const theirs: [number, number] = [partnerLatitude, partnerLongitude];
+      const bounds = L.latLngBounds([mine, theirs]);
+      if (bounds.getNorthEast().equals(bounds.getSouthWest())) map.setView(mine, 16);
+      else
+        map.fitBounds(bounds, {
+          paddingTopLeft: [90, 105],
+          paddingBottomRight: [90, 125],
+          maxZoom: 13,
+        });
       L.polyline([mine, theirs], {
         color: "#2496e8",
         weight: 5,
@@ -85,14 +97,6 @@ export function BetweenUsMap({ me, partner }: { me: MapPerson; partner: MapPerso
         ])
         .setContent(`You → ${escapeHtml(partnerName)}`)
         .addTo(map);
-      const bounds = L.latLngBounds([mine, theirs]);
-      if (bounds.getNorthEast().equals(bounds.getSouthWest())) map.setView(mine, 16);
-      else
-        map.fitBounds(bounds, {
-          paddingTopLeft: [90, 105],
-          paddingBottomRight: [90, 125],
-          maxZoom: 13,
-        });
       window.setTimeout(() => map?.invalidateSize(), 50);
     });
     return () => { disposed = true; map?.remove(); };
