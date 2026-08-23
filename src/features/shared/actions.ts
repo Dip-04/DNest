@@ -777,6 +777,54 @@ export async function createImportantDate(form: FormData) {
   revalidatePath("/us");
   succeed("/us", "Important date saved.");
 }
+
+export async function saveCurrentLocation(form: FormData): Promise<{
+  ok: boolean;
+  message: string;
+}> {
+  const latitude = Number(form.get("latitude"));
+  const longitude = Number(form.get("longitude"));
+  if (
+    !Number.isFinite(latitude) ||
+    Math.abs(latitude) > 90 ||
+    !Number.isFinite(longitude) ||
+    Math.abs(longitude) > 180
+  ) {
+    return { ok: false, message: "Your device returned an invalid location." };
+  }
+
+  const { supabase, user } = await auth();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ latitude, longitude })
+    .eq("id", user.id);
+  if (error) {
+    return { ok: false, message: "Your location could not be saved." };
+  }
+
+  const { data: membership } = await supabase
+    .from("nest_members")
+    .select("nest_id")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (membership) {
+    await notifyPartner({
+      nestId: membership.nest_id,
+      actorId: user.id,
+      kind: "moment",
+      title: "Distance is ready to update",
+      body: "Your partner updated their private location.",
+      targetPath: "/home",
+    });
+  }
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    message: "Location saved. Distance will show when both partners save it.",
+  };
+}
+
 export async function updateProfile(form: FormData) {
   const name = String(form.get("display_name") ?? "")
     .trim()

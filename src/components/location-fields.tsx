@@ -3,6 +3,7 @@
 import { LocateFixed } from "lucide-react";
 import { useState } from "react";
 import { showToast } from "@/components/toast-viewport";
+import { saveCurrentLocation } from "@/features/shared/actions";
 
 export function LocationFields({
   defaultCity,
@@ -24,11 +25,18 @@ export function LocationFields({
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
+      async ({ coords }) => {
         setLatitude(coords.latitude);
         setLongitude(coords.longitude);
+        const form = new FormData();
+        form.set("latitude", coords.latitude.toString());
+        form.set("longitude", coords.longitude.toString());
+        const result = await saveCurrentLocation(form).catch(() => ({
+          ok: false,
+          message: "Your location could not be saved.",
+        }));
         setLocating(false);
-        showToast("success", "Location captured. Save your profile to use it.");
+        showToast(result.ok ? "success" : "error", result.message);
       },
       () => {
         setLocating(false);
@@ -66,7 +74,7 @@ export function LocationFields({
           onClick={captureLocation}
         >
           <LocateFixed className="size-4" />
-          {locating ? "Getting locationâ€¦" : "Use my current location"}
+          {locating ? "Saving locationâ€¦" : "Use my current location"}
         </button>
       </div>
     </>
