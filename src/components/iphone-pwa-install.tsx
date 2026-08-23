@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Download, Share, SquarePlus, X } from "lucide-react";
 
 function runningStandalone() {
@@ -15,10 +15,6 @@ export function IPhonePwaInstall() {
   const [open, setOpen] = useState(false);
   const [installed, setInstalled] = useState(false);
 
-  useEffect(() => {
-    setInstalled(runningStandalone());
-  }, []);
-
   if (installed) {
     return (
       <span className="btn btn-secondary" role="status">
@@ -32,7 +28,10 @@ export function IPhonePwaInstall() {
       <button
         className="btn btn-secondary"
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          if (runningStandalone()) setInstalled(true);
+          else setOpen(true);
+        }}
       >
         <Download className="size-4" />
         Install DNest on iPhone
