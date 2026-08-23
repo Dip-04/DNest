@@ -895,14 +895,14 @@ a {
   min-height: 9rem;
   align-self: stretch;
 }
-.between-route svg {
+.between-route > svg {
   position: absolute;
   inset: 0.8rem 0 2.2rem;
   width: 100%;
   height: calc(100% - 3rem);
   overflow: visible;
 }
-.between-route path {
+.between-route > svg > path {
   fill: none;
   stroke: color-mix(in srgb, var(--rose) 70%, var(--plum));
   stroke-width: 8;

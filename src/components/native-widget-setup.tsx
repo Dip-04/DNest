@@ -43,9 +43,14 @@ export function NativeWidgetSetup() {
     }
   };
 
+  const serverOrigin = typeof window !== "undefined" ? window.location.origin : "";
   const deepLink =
     token && platform && typeof window !== "undefined"
-      ? `dnest://connect?server=${encodeURIComponent(window.location.origin)}&token=${encodeURIComponent(token)}`
+      ? `dnest://connect?server=${encodeURIComponent(serverOrigin)}&token=${encodeURIComponent(token)}`
+      : null;
+  const androidIntent =
+    token && platform === "android" && typeof window !== "undefined"
+      ? `intent://connect?server=${encodeURIComponent(serverOrigin)}&token=${encodeURIComponent(token)}#Intent;scheme=dnest;package=com.dnest.app;S.browser_fallback_url=${encodeURIComponent(`${serverOrigin}/downloads/dnest-android.apk`)};end`
       : null;
 
   return (
@@ -76,9 +81,30 @@ export function NativeWidgetSetup() {
           <p className="eyebrow">Private {platform} widget key</p>
           <code className="mt-2 block break-all text-sm font-bold">{token}</code>
           <div className="mt-4 flex flex-wrap gap-3">
-            <a className="btn btn-primary" href={deepLink}>
-              Open in DNest app
-            </a>
+            {platform === "android" && androidIntent ? (
+              <>
+                <a
+                  className="btn btn-secondary"
+                  href="/downloads/dnest-android.apk"
+                  download
+                >
+                  1. Install Android app
+                </a>
+                <a className="btn btn-primary" href={androidIntent}>
+                  2. Open installed app
+                </a>
+              </>
+            ) : (
+              <>
+                <a className="btn btn-primary" href={deepLink}>
+                  Open installed iPhone app
+                </a>
+                <span className="muted basis-full text-xs">
+                  Install the signed DNest iPhone app with TestFlight or Xcode
+                  before opening this link.
+                </span>
+              </>
+            )}
             <button
               className="btn btn-secondary"
               type="button"
@@ -95,4 +121,3 @@ export function NativeWidgetSetup() {
     </section>
   );
 }
-
