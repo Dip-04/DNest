@@ -2,7 +2,9 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MobileAppNavigation } from "@/components/app-navigation";
 
-const usePathname = vi.fn(() => "/home");
+const { usePathname } = vi.hoisted(() => ({
+  usePathname: vi.fn(() => "/home"),
+}));
 
 vi.mock("next/navigation", () => ({ usePathname }));
 
