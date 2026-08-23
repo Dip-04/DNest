@@ -109,7 +109,7 @@ export default async function Home({
           </h1>
           <p className="muted mt-2">
             {partner
-              ? `${partner.display_name}’s time is ${formatLocalTime(partner.timezone)}${distance != null ? ` · ${distance.toLocaleString()} km apart` : ""}`
+              ? `${partner.display_name}’s time is ${formatLocalTime(partner.timezone)}`
               : "Your Nest is ready for the person you love."}
           </p>
         </div>
