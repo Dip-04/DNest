@@ -1490,7 +1490,12 @@ a {
   color: #fff;
   box-shadow: 0 8px 20px rgb(21 95 60 / 22%);
 }
-.period-day.is-today { box-shadow: inset 0 0 0 2px var(--plum); }
+.period-day.is-today {
+  border-color: #56364f;
+  box-shadow:
+    inset 0 0 0 2px #56364f,
+    0 0 0 3px color-mix(in srgb, #56364f 16%, transparent);
+}
 .period-day.is-selected { outline: 3px solid color-mix(in srgb, var(--rose) 35%, transparent); }
 .period-day-marks { display: flex; min-height: 0.8rem; align-items: center; gap: 0.1rem; color: var(--rose-deep); font-size: 0.65rem; }
 .period-day-marks svg { width: 0.7rem; height: 0.7rem; }

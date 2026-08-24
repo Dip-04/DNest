@@ -107,8 +107,8 @@ export function trackerModel(cycles: PeriodCycle[], settings: TrackerSettings, t
         start,
         end: addDays(start, periodLength - 1),
         ovulation,
-        fertileStart: addDays(ovulation, -5),
-        fertileEnd: addDays(ovulation, 1),
+        fertileStart: addDays(ovulation, -6),
+        fertileEnd: addDays(ovulation, 4),
       });
       start = addDays(start, cycleLength);
     }

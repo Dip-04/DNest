@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  dayDifference,
   fertilityEstimateForDate,
   periodEnd,
   trackerModel,
@@ -26,6 +27,9 @@ describe("trackerModel", () => {
     expect(model.cycleLength).toBe(29);
     expect(model.next?.start).toBe("2026-01-02");
     expect(model.next?.ovulation).toBe("2025-12-19");
+    expect(model.predictions[0].fertileStart).toBe("2025-12-13");
+    expect(model.predictions[0].fertileEnd).toBe("2025-12-23");
+    expect(dayDifference(model.predictions[0].fertileStart, model.predictions[0].fertileEnd) + 1).toBe(11);
     expect(model.predictions).toHaveLength(8);
   });
 
