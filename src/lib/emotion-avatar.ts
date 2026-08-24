@@ -1,5 +1,20 @@
 export type EmotionAvatarKind = "male" | "female";
 
+export const EMOTION_ANIMATION_NAMES = [
+  "idle",
+  "hug",
+  "kiss",
+  "cuddle",
+  "love",
+  "happy",
+  "miss_you",
+  "flying_kiss",
+  "need_you",
+  "celebrate",
+  "hold_hands",
+  "comfort",
+] as const;
+
 const FEMALE_IDENTITIES = new Set([
   "woman",
   "female",
