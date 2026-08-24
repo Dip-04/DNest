@@ -1,10 +1,23 @@
 import { describe, expect, it } from "vitest";
 import {
   fertilityEstimateForDate,
+  periodEnd,
   trackerModel,
 } from "@/lib/period-tracker";
 
 describe("trackerModel", () => {
+  it("expands a first-day-only record into the automatic five-day period window", () => {
+    const cycle = {
+      id: "single-day",
+      start_date: "2026-08-22",
+      end_date: null,
+      cycle_length: null,
+      period_length: null,
+    };
+
+    expect(periodEnd(cycle)).toBe("2026-08-26");
+  });
+
   it("averages recent cycles and crosses year boundaries", () => {
     const model = trackerModel([
       { id: "1", start_date: "2025-11-05", end_date: "2025-11-09", cycle_length: null, period_length: 5 },

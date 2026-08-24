@@ -18,8 +18,8 @@ import {
   startPeriod,
 } from "@/features/period-tracker/actions";
 import {
-  addDays,
   fertilityEstimateForDate,
+  periodEnd,
   type PeriodCycle,
   type PeriodPrediction,
 } from "@/lib/period-tracker";
@@ -66,20 +66,22 @@ export function PeriodCalendar({
     ? cycles.find(
         (cycle) =>
           selected >= cycle.start_date &&
-          selected <= (cycle.end_date ?? cycle.start_date),
+          selected <= periodEnd(cycle, defaultPeriodLength),
       )
     : undefined;
 
   function flags(date: string) {
     const actual = cycles.some(
       (cycle) =>
-        date >= cycle.start_date && date <= (cycle.end_date ?? cycle.start_date),
+        date >= cycle.start_date && date <= periodEnd(cycle, defaultPeriodLength),
     );
     const predicted =
       !actual &&
       predictions.some((item) => date >= item.start && date <= item.end);
-    const ovulation = predictions.some((item) => item.ovulation === date);
+    const ovulation =
+      !actual && predictions.some((item) => item.ovulation === date);
     const fertile =
+      !actual &&
       !predicted &&
       predictions.some(
         (item) => date >= item.fertileStart && date <= item.fertileEnd,
@@ -268,8 +270,7 @@ export function PeriodCalendar({
                         type="date"
                         name="end_date"
                         defaultValue={
-                          selectedCycle.end_date ??
-                          addDays(selectedCycle.start_date, defaultPeriodLength - 1)
+                          periodEnd(selectedCycle, defaultPeriodLength)
                         }
                         required
                       />

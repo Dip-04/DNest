@@ -35,6 +35,12 @@ export const addDays = (value: string, days: number) =>
 export const dayDifference = (from: string, to: string) =>
   Math.round((parseDay(to).getTime() - parseDay(from).getTime()) / DAY);
 
+export function periodEnd(cycle: PeriodCycle, fallbackLength = 5) {
+  if (cycle.end_date) return cycle.end_date;
+  const length = Math.max(5, cycle.period_length ?? fallbackLength);
+  return addDays(cycle.start_date, length - 1);
+}
+
 export function fertilityEstimateForDate(
   date: string,
   predictions: PeriodPrediction[],
@@ -83,8 +89,8 @@ export function trackerModel(cycles: PeriodCycle[], settings: TrackerSettings, t
     dayDifference(sorted[index].start_date, cycle.start_date),
   ).filter((value) => value >= 20 && value <= 45).slice(-6);
   const lengths = sorted.map((cycle) =>
-    cycle.end_date ? dayDifference(cycle.start_date, cycle.end_date) + 1 : cycle.period_length,
-  ).filter((value): value is number => value != null && value >= 1 && value <= 15).slice(-6);
+    dayDifference(cycle.start_date, periodEnd(cycle, settings.default_period_length)) + 1,
+  ).filter((value) => value >= 1 && value <= 15).slice(-6);
   const cycleLength = intervals.length
     ? Math.round(intervals.reduce((sum, value) => sum + value, 0) / intervals.length)
     : settings.default_cycle_length;

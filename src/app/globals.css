@@ -1472,7 +1472,12 @@ a {
   transition: transform 0.18s, border-color 0.18s;
 }
 .period-day:hover { transform: translateY(-2px); }
-.period-day.is-period { background: var(--rose-soft); border-color: var(--rose); }
+.period-day.is-period {
+  border-color: var(--rose-deep);
+  background: linear-gradient(145deg, #e75f7a, #c94364);
+  color: #fff;
+  box-shadow: 0 8px 18px rgb(177 54 84 / 20%);
+}
 .period-day.is-predicted { border: 1px dashed var(--rose); }
 .period-day.is-fertile {
   border-color: color-mix(in srgb, #4f9c72 48%, var(--border));
@@ -1489,6 +1494,7 @@ a {
 .period-day.is-selected { outline: 3px solid color-mix(in srgb, var(--rose) 35%, transparent); }
 .period-day-marks { display: flex; min-height: 0.8rem; align-items: center; gap: 0.1rem; color: var(--rose-deep); font-size: 0.65rem; }
 .period-day-marks svg { width: 0.7rem; height: 0.7rem; }
+.period-day.is-period .period-day-marks { color: #fff; }
 .period-day.is-fertile .period-day-marks { color: #17623e; }
 .period-day.is-ovulation .period-day-marks { color: #fff; }
 .period-legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.2rem; }

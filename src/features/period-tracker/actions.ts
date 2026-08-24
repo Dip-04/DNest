@@ -156,13 +156,16 @@ export async function startPeriod(form: FormData) {
     .order("start_date", { ascending: false })
     .limit(1)
     .maybeSingle();
-  const { error } = await value.supabase.from("period_cycles").insert({
-    user_id: value.user.id,
-    start_date: start,
-    end_date: end,
-    period_length: 5,
-    cycle_length: previous ? dayDifference(previous.start_date, start) : null,
-  });
+  const { error } = await value.supabase.from("period_cycles").upsert(
+    {
+      user_id: value.user.id,
+      start_date: start,
+      end_date: end,
+      period_length: 5,
+      cycle_length: previous ? dayDifference(previous.start_date, start) : null,
+    },
+    { onConflict: "user_id,start_date" },
+  );
   if (error)
     redirect("/period-tracker?error=That+period+could+not+be+logged.");
 
