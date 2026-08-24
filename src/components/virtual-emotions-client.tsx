@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Heart, History, RotateCcw, Send, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { LocalDateTime } from "@/components/local-date-time";
 import { showToast } from "@/components/toast-viewport";
 import { markVirtualEmotionRead, sendVirtualEmotion } from "@/features/emotions/actions";
@@ -45,10 +45,17 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
   const [pending, startTransition] = useTransition();
   const palettes = useMemo(() => [colorFor(userId), colorFor(nestId)], [userId, nestId]);
 
+  const markRead = useCallback((event: VirtualEmotion) => {
+    if (event.recipient_id !== userId || event.read_at) return;
+    const readAt = new Date().toISOString();
+    setEvents((current) => current.map((item) => item.id === event.id ? { ...item, read_at: readAt } : item));
+    setActiveEvent((current) => current?.id === event.id ? { ...current, read_at: readAt } : current);
+    void markVirtualEmotionRead(event.id);
+  }, [userId]);
+
   useEffect(() => {
-    if (initialPlay?.recipient_id === userId && !initialPlay.read_at)
-      void markVirtualEmotionRead(initialPlay.id);
-  }, [initialPlay, userId]);
+    if (initialPlay?.recipient_id === userId && !initialPlay.read_at) markRead(initialPlay);
+  }, [initialPlay, markRead, userId]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -60,12 +67,12 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
           setActive(event.type);
           setActiveEvent(event);
           setReplayKey((value) => value + 1);
-          void markVirtualEmotionRead(event.id);
+          markRead(event);
           showToast("success", `${partnerName} sent ${optionFor(event.type).label} ${optionFor(event.type).emoji}`);
         }
       }).subscribe();
     return () => { void supabase.removeChannel(channel); };
-  }, [nestId, partnerName, userId]);
+  }, [markRead, nestId, partnerName, userId]);
 
   function send(type: VirtualEmotionType) {
     startTransition(async () => {
@@ -117,7 +124,7 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
             {events.length ? events.slice(0, 12).map((event) => {
               const option = optionFor(event.type);
               const mine = event.sender_id === userId;
-              return <button type="button" key={event.id} onClick={() => { setActive(event.type); setActiveEvent(event); setReplayKey((value) => value + 1); if (!mine && !event.read_at) void markVirtualEmotionRead(event.id); }}><span>{option.emoji}</span><span><strong>{mine ? "You" : partnerName} sent {option.label}</strong><small><LocalDateTime value={event.created_at} timeStyle="short" />{!mine && !event.read_at ? " · New" : ""}</small></span></button>;
+              return <button type="button" key={event.id} onClick={() => { setActive(event.type); setActiveEvent(event); setReplayKey((value) => value + 1); markRead(event); }}><span>{option.emoji}</span><span><strong>{mine ? "You" : partnerName} sent {option.label}</strong><small><LocalDateTime value={event.created_at} timeStyle="short" />{!mine && !event.read_at ? " · New" : ""}</small></span></button>;
             }) : <p className="muted text-sm">Your first virtual emotion will appear here.</p>}
           </div>
         </section>

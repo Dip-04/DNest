@@ -10,6 +10,7 @@ describe("route access policy", () => {
   it.each([
     "/home",
     "/moments/new",
+    "/emotions",
     "/us/capsules/one",
     "/onboarding",
     "/reset-password",
