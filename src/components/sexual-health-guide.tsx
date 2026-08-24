@@ -1,5 +1,5 @@
 import {
-  BookOpenHeart,
+  BookHeart,
   HeartHandshake,
   MessageCircleHeart,
   ShieldCheck,
@@ -33,7 +33,7 @@ const topics = [
     body: "Using a new condom or appropriate barrier correctly for each sex act reduces the risk of many sexually transmitted infections and pregnancy, but does not remove all risk. STI testing, honest conversations about results, and recommended vaccines are also part of shared care.",
   },
   {
-    icon: BookOpenHeart,
+    icon: BookHeart,
     title: "Contraception & emergency options",
     summary: "Choose a method that fits health needs and future plans.",
     body: "Options include condoms, pills, injections, implants and intrauterine devices. Effectiveness, side effects and suitability differ. Emergency contraception may help after unprotected sex or method failure and works best when accessed promptly; a clinician or pharmacist can guide the right option.",
