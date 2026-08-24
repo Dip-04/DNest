@@ -22,6 +22,9 @@ export default async function Page({
   const me = context.nest.members.find((m) => m.user_id === context.userId)
     ?.profiles as Profile | undefined;
   const myTimeZone = safeTimeZone(me?.timezone);
+  // Cron is the primary delivery path. This authenticated catch-up also makes
+  // due notes available immediately if a cron run is delayed or unavailable.
+  await supabase.rpc("deliver_my_due_love_notes");
   const { data: notes } = await supabase
     .from("love_notes")
     .select(
@@ -131,7 +134,7 @@ export default async function Page({
                         </p>
                         <form action={openLoveNote} className="mt-4">
                           <input type="hidden" name="id" value={note.id} />
-                          <FormSubmitButton pendingLabel="Openingâ€¦">
+                          <FormSubmitButton pendingLabel="Opening…">
                             <MailOpen className="size-4" />
                             Open Love Note
                           </FormSubmitButton>

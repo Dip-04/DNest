@@ -104,7 +104,7 @@ export function LocationFields({
         >
           <LocateFixed className="size-4" />
           {locating
-            ? "Turning on locationâ€¦"
+            ? "Turning on location…"
             : live
               ? "Update location now"
               : "Turn on live location"}
