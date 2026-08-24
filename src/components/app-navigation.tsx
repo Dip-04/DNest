@@ -6,6 +6,7 @@ import {
   BookHeart,
   CalendarHeart,
   Heart,
+  HeartHandshake,
   Home,
   Menu,
   MessageCircleHeart,
@@ -27,6 +28,7 @@ const nav = [
   { href: "/moments/new", label: "Add Moment", icon: Plus, exact: true },
   { href: "/notes", label: "Love Notes", icon: MessageCircleHeart },
   { href: "/together", label: "Together", icon: Sparkles },
+  { href: "/emotions", label: "Virtual Emotions", icon: HeartHandshake },
   { href: "/plans", label: "Plans", icon: Plane },
   { href: "/us", label: "Us", icon: UserRound },
   { href: "/period-tracker", label: "Period Tracker", icon: CalendarHeart },
@@ -70,10 +72,11 @@ export function MobileAppNavigation() {
     nav[4],
     nav[5],
     nav[6],
+    nav[7],
     { href: "/questions", label: "Daily Question", icon: ScrollText },
     { href: "/notifications", label: "Notifications", icon: Bell },
-    nav[7],
     nav[8],
+    nav[9],
   ];
 
   useEffect(() => {

@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
       "home",
       "moments",
       "together",
+      "emotions",
       "plans",
       "us",
       "notes",

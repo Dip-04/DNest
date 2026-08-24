@@ -14,7 +14,8 @@ export type NotificationKind =
   | "capsule"
   | "wishlist"
   | "moment"
-  | "period_tracker";
+  | "period_tracker"
+  | "virtual_emotion";
 
 type PartnerNotification = {
   nestId: string;

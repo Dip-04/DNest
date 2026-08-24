@@ -882,6 +882,7 @@ export async function savePreferences(form: FormData) {
     "wishlist",
     "moment",
     "period_tracker",
+    "virtual_emotion",
   ];
   const notifications = Object.fromEntries(
     kinds.map((kind) => [kind, form.get(kind) === "on"]),

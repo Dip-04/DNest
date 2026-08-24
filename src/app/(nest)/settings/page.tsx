@@ -36,6 +36,7 @@ const kinds = [
   ["wishlist", "Wishlist"],
   ["moment", "Moments"],
   ["period_tracker", "Period tracker updates"],
+  ["virtual_emotion", "Virtual emotions"],
 ] as const;
 export default async function Page({
   searchParams,

@@ -9,6 +9,28 @@ export type Mood =
   | "Low"
   | "Other";
 export type WishlistStatus = "dream" | "planning" | "done";
+export type VirtualEmotionType =
+  | "hug"
+  | "kiss"
+  | "cuddle"
+  | "love"
+  | "happy"
+  | "miss_you"
+  | "flying_kiss"
+  | "need_you"
+  | "celebrate"
+  | "hold_hands"
+  | "comfort";
+
+export interface VirtualEmotion {
+  id: string;
+  nest_id: string;
+  sender_id: string;
+  recipient_id: string;
+  type: VirtualEmotionType;
+  read_at: string | null;
+  created_at: string;
+}
 export interface Profile {
   id: string;
   display_name: string;

@@ -2,6 +2,7 @@ export const privatePagePrefixes = [
   "/home",
   "/moments",
   "/together",
+  "/emotions",
   "/plans",
   "/us",
   "/notes",

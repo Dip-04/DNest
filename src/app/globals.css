@@ -1383,6 +1383,77 @@ a {
   .moment-card, .moment-image-full, .moment-image-expand { transition: none; }
   .moment-card:hover, .moment-card:hover .moment-image-full { transform: none; }
 }
+
+.emotion-stage {
+  position: relative;
+  min-height: 42rem;
+  border: 1px solid color-mix(in srgb, var(--rose) 28%, var(--border));
+  border-radius: 2rem;
+  background:
+    radial-gradient(circle at 50% 15%, rgb(255 239 229 / 80%), transparent 42%),
+    linear-gradient(155deg, color-mix(in srgb, var(--rose-soft) 72%, var(--surface)), color-mix(in srgb, var(--plum-soft) 48%, var(--surface)));
+  box-shadow: var(--shadow-raised);
+}
+.emotion-stage-copy { position: absolute; z-index: 4; top: 1.5rem; left: 1.5rem; }
+.emotion-stage-copy p { margin-top: 0.3rem; color: var(--muted); font-size: 0.78rem; }
+.emotion-canvas-wrap { position: absolute; inset: 5.5rem 0 5rem; }
+.emotion-scene-loading { display: grid; height: 100%; place-items: center; color: var(--muted); font-size: 0.8rem; }
+.emotion-name {
+  position: absolute;
+  bottom: 1rem;
+  padding: 0.4rem 0.72rem;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 66%);
+  color: #654756;
+  font-size: 0.7rem;
+  font-weight: 800;
+  backdrop-filter: blur(12px);
+}
+.emotion-name-left { left: 24%; }
+.emotion-name-right { right: 24%; }
+.emotion-stage-actions { position: absolute; z-index: 5; right: 1.25rem; bottom: 1.25rem; left: 1.25rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+.emotion-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; }
+.emotion-picker button {
+  display: grid;
+  min-height: 4.7rem;
+  place-items: center;
+  gap: 0.15rem;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-muted);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.emotion-picker button:hover { transform: translateY(-3px) scale(1.02); border-color: var(--rose); }
+.emotion-picker button.is-active { border-color: var(--rose); background: var(--rose-soft); box-shadow: inset 0 0 0 1px var(--rose); }
+.emotion-picker button:disabled { cursor: wait; opacity: 0.65; }
+.emotion-picker button span { font-size: 1.5rem; }
+.emotion-picker button small { color: var(--muted); font-size: 0.65rem; font-weight: 750; }
+.emotion-history { display: grid; max-height: 25rem; gap: 0.4rem; overflow-y: auto; }
+.emotion-history button { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem; border: 0; border-radius: 1rem; background: transparent; text-align: left; cursor: pointer; }
+.emotion-history button:hover { background: var(--surface-muted); }
+.emotion-history button > span:first-child { font-size: 1.35rem; }
+.emotion-history strong, .emotion-history small { display: block; }
+.emotion-history strong { font-size: 0.76rem; }
+.emotion-history small { margin-top: 0.15rem; color: var(--muted); font-size: 0.65rem; }
+.emotion-heart-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.emotion-heart-particles i { position: absolute; bottom: 18%; color: var(--rose); font-style: normal; opacity: 0; animation: emotion-heart-rise 4s ease-in infinite; }
+.emotion-heart-particles i:nth-child(1) { left: 44%; animation-delay: 0s; }
+.emotion-heart-particles i:nth-child(2) { left: 52%; animation-delay: 1s; }
+.emotion-heart-particles i:nth-child(3) { left: 48%; animation-delay: 2s; }
+.emotion-heart-particles i:nth-child(4) { left: 56%; animation-delay: 3s; }
+@keyframes emotion-heart-rise { 0% { opacity: 0; transform: translateY(0) scale(0.65); } 20% { opacity: 0.75; } 100% { opacity: 0; transform: translateY(-12rem) translateX(1.5rem) scale(1.2); } }
+@media (max-width: 639px) {
+  .emotion-stage { min-height: 38rem; }
+  .emotion-stage-copy { top: 1rem; left: 1rem; }
+  .emotion-canvas-wrap { inset: 5rem -2.5rem 6.5rem; }
+  .emotion-name-left { left: 20%; }
+  .emotion-name-right { right: 20%; }
+  .emotion-stage-actions { bottom: 0.9rem; }
+  .emotion-stage-actions .btn { padding: 0.65rem 0.8rem; font-size: 0.7rem; }
+}
 .period-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));

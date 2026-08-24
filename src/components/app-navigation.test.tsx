@@ -25,6 +25,7 @@ describe("mobile app navigation", () => {
     ).toBeVisible();
     for (const [name, href] of [
       ["Together", "/together"],
+      ["Virtual Emotions", "/emotions"],
       ["Plans", "/plans"],
       ["Us", "/us"],
       ["Daily Question", "/questions"],

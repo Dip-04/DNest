@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/purity -- randomness runs once per async Server Component request. */
 import Link from "next/link";
-import { Clock3, Heart, Shuffle, Sparkles } from "lucide-react";
+import { Clock3, Heart, HeartHandshake, Shuffle, Sparkles } from "lucide-react";
 import { AnimatedPage } from "@/components/animated-page";
 import { saveDateIdea, startChallenge } from "@/features/shared/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -51,10 +51,7 @@ export default async function Page({
             Low-pressure ways to share a little time, apart.
           </p>
         </div>
-        <Link className="btn btn-primary" href="/together?surprise=1">
-          <Shuffle className="size-4" />
-          Surprise Us
-        </Link>
+        <div className="flex flex-wrap gap-2"><Link className="btn btn-primary" href="/emotions"><HeartHandshake className="size-4" />Send an Emotion</Link><Link className="btn btn-secondary" href="/together?surprise=1"><Shuffle className="size-4" />Surprise Us</Link></div>
       </header>
       <nav className="mt-7 flex flex-wrap gap-2" aria-label="Activity duration">
         {[
