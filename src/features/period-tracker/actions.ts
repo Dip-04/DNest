@@ -77,13 +77,11 @@ async function notifySharedTrackerPartner(
 
 export async function saveTrackerSettings(form: FormData) {
   const cycle = Number(form.get("default_cycle_length"));
-  const period = Number(form.get("default_period_length"));
+  const period = 5;
   const timezone = String(form.get("timezone") ?? "UTC");
   if (
     cycle < 20 ||
     cycle > 45 ||
-    period < 1 ||
-    period > 15 ||
     !isValidTimeZone(timezone)
   )
     redirect("/period-tracker?error=Check+your+cycle+defaults+and+timezone.");

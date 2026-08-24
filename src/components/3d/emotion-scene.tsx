@@ -1,6 +1,6 @@
 "use client";
 
-import { ContactShadows, Environment, Sparkles } from "@react-three/drei";
+import { ContactShadows, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { MathUtils, type Group } from "three";
@@ -24,13 +24,13 @@ export function EmotionScene({
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
     >
       <ambientLight intensity={1.15} />
+      <hemisphereLight args={["#fff3f6", "#342633", 1.35]} />
       <directionalLight position={[3, 5, 4]} intensity={2.2} color="#fff3e8" />
       <pointLight position={[-3, 2, 2]} intensity={16} distance={8} color="#f3a2b6" />
       <pointLight position={[3, 1, 1]} intensity={12} distance={7} color="#a98ac1" />
       <Couple emotion={emotion} replayKey={replayKey} leftColor={leftColor} rightColor={rightColor} />
       <Sparkles count={emotion === "celebrate" ? 70 : 32} scale={[4.8, 3.2, 2]} size={3} speed={0.55} color={emotion === "celebrate" ? "#ffd37a" : "#f29aae"} />
       <ContactShadows position={[0, -1.52, 0]} opacity={0.35} scale={6} blur={2.6} far={4} />
-      <Environment preset="studio" environmentIntensity={0.35} />
     </Canvas>
   );
 }
