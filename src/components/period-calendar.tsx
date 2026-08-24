@@ -15,7 +15,7 @@ import {
   deletePeriodCycle,
   savePeriodCycle,
   savePeriodDayMood,
-  togglePeriodDay,
+  startPeriod,
 } from "@/features/period-tracker/actions";
 import {
   addDays,
@@ -236,46 +236,49 @@ export function PeriodCalendar({
               </div>
             ) : (
               <>
-                <form action={togglePeriodDay} className="mt-5">
-                  <input type="hidden" name="date" value={selected} />
-                  <button className="btn btn-secondary w-full">
-                    <Droplets className="size-4" />
-                    {selectedCycle
-                      ? "Remove this period day"
-                      : "Start a 5-day period"}
-                  </button>
-                </form>
-                <form action={savePeriodCycle} className="mt-5 grid gap-4">
-                  {selectedCycle && (
+                {!selectedCycle && (
+                  <form action={startPeriod} className="mt-5">
+                    <input type="hidden" name="start_date" value={selected} />
+                    <button className="btn btn-primary w-full">
+                      <Droplets className="size-4" />
+                      Log this as day 1
+                    </button>
+                    <p className="muted mt-2 text-center text-xs">
+                      The next four days will be added automatically.
+                    </p>
+                  </form>
+                )}
+                {selectedCycle && (
+                  <form action={savePeriodCycle} className="mt-5 grid gap-4">
                     <input type="hidden" name="id" value={selectedCycle.id} />
-                  )}
-                  <label className="label">
-                    Period start
-                    <input
-                      className="field"
-                      type="date"
-                      name="start_date"
-                      defaultValue={selectedCycle?.start_date ?? selected}
-                      required
-                    />
-                  </label>
-                  <label className="label">
-                    Period end
-                    <input
-                      className="field"
-                      type="date"
-                      name="end_date"
-                      defaultValue={
-                        selectedCycle?.end_date ??
-                        addDays(selected, defaultPeriodLength - 1)
-                      }
-                      required
-                    />
-                  </label>
-                  <button className="btn btn-primary">
-                    {selectedCycle ? "Update logged cycle" : "Log this period"}
-                  </button>
-                </form>
+                    <label className="label">
+                      Period start
+                      <input
+                        className="field"
+                        type="date"
+                        name="start_date"
+                        defaultValue={selectedCycle.start_date}
+                        required
+                      />
+                    </label>
+                    <label className="label">
+                      Period end
+                      <input
+                        className="field"
+                        type="date"
+                        name="end_date"
+                        defaultValue={
+                          selectedCycle.end_date ??
+                          addDays(selectedCycle.start_date, defaultPeriodLength - 1)
+                        }
+                        required
+                      />
+                    </label>
+                    <button className="btn btn-primary">
+                      Update period dates
+                    </button>
+                  </form>
+                )}
                 {selectedCycle && (
                   <form
                     action={deletePeriodCycle}

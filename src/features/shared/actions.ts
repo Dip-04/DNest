@@ -881,6 +881,7 @@ export async function savePreferences(form: FormData) {
     "capsule",
     "wishlist",
     "moment",
+    "period_tracker",
   ];
   const notifications = Object.fromEntries(
     kinds.map((kind) => [kind, form.get(kind) === "on"]),

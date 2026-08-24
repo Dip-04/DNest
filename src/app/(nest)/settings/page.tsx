@@ -35,6 +35,7 @@ const kinds = [
   ["capsule", "Time Capsules"],
   ["wishlist", "Wishlist"],
   ["moment", "Moments"],
+  ["period_tracker", "Period tracker updates"],
 ] as const;
 export default async function Page({
   searchParams,
