@@ -263,7 +263,7 @@ function poseTracks(rig: Rig, times: number[], poses: Pose[]): KeyframeTrack[] {
   for (const key of ["upperArmL", "upperArmR", "lowerArmL", "lowerArmR", "head", "chest"] as const) {
     const bone = rig[key];
     if (!bone) continue;
-    const deltas = poses.map((pose) => pose[key] ?? [0, 0, 0]);
+    const deltas = poses.map((pose) => pose[key] ?? ([0, 0, 0] as [number, number, number]));
     tracks.push(new QuaternionKeyframeTrack(`${bone.uuid}.quaternion`, times, deltas.flatMap((delta) => rotated(bone.quaternion, delta))));
   }
   return tracks;
