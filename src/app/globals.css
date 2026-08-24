@@ -1403,14 +1403,89 @@ a {
 .period-day:hover { transform: translateY(-2px); }
 .period-day.is-period { background: var(--rose-soft); border-color: var(--rose); }
 .period-day.is-predicted { border: 1px dashed var(--rose); }
-.period-day.is-fertile { background: color-mix(in srgb, var(--plum-soft) 68%, var(--surface)); }
+.period-day.is-fertile {
+  border-color: color-mix(in srgb, #4f9c72 48%, var(--border));
+  background: color-mix(in srgb, #bfe8cf 58%, var(--surface));
+  color: color-mix(in srgb, #145c39 88%, var(--foreground));
+}
+.period-day.is-ovulation {
+  border-color: #155f3c;
+  background: linear-gradient(145deg, #28764f, #124c32);
+  color: #fff;
+  box-shadow: 0 8px 20px rgb(21 95 60 / 22%);
+}
 .period-day.is-today { box-shadow: inset 0 0 0 2px var(--plum); }
 .period-day.is-selected { outline: 3px solid color-mix(in srgb, var(--rose) 35%, transparent); }
 .period-day-marks { display: flex; min-height: 0.8rem; align-items: center; gap: 0.1rem; color: var(--rose-deep); font-size: 0.65rem; }
 .period-day-marks svg { width: 0.7rem; height: 0.7rem; }
+.period-day.is-fertile .period-day-marks { color: #17623e; }
+.period-day.is-ovulation .period-day-marks { color: #fff; }
 .period-legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.2rem; }
 .period-legend span { display: inline-flex; align-items: center; gap: 0.3rem; }
 .period-legend svg { width: 0.8rem; height: 0.8rem; }
+.fertility-day-card {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: var(--surface-muted);
+}
+.fertility-day-card > div { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.fertility-day-card strong { padding: 0.35rem 0.7rem; border-radius: 999px; font-size: 0.75rem; }
+.fertility-day-card p { font-size: 0.82rem; line-height: 1.45; }
+.fertility-day-card small { color: var(--muted); font-size: 0.68rem; }
+.fertility-day-card.is-high { border-color: color-mix(in srgb, #155f3c 55%, var(--border)); background: color-mix(in srgb, #bfe8cf 48%, var(--surface)); }
+.fertility-day-card.is-high strong { background: #155f3c; color: white; }
+.fertility-day-card.is-medium { border-color: color-mix(in srgb, #4f9c72 42%, var(--border)); background: color-mix(in srgb, #dff3e6 62%, var(--surface)); }
+.fertility-day-card.is-medium strong { background: #d1eadb; color: #175a3a; }
+.fertility-day-card.is-low strong { background: var(--surface); color: var(--muted); }
+.fertility-day-card.is-unknown strong { background: var(--surface); color: var(--muted); }
+.sexual-health-guide {
+  overflow: hidden;
+  border-color: color-mix(in srgb, #4f9c72 22%, var(--border));
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, #bfe8cf 32%, transparent), transparent 35%),
+    var(--surface);
+}
+.sexual-health-topic {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--surface) 94%, #eef8f1);
+}
+.sexual-health-topic summary {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+.sexual-health-topic summary::-webkit-details-marker { display: none; }
+.sexual-health-topic summary::after {
+  margin-left: auto;
+  color: var(--muted);
+  content: "+";
+  font-size: 1.25rem;
+  transition: transform 0.2s ease;
+}
+.sexual-health-topic[open] summary::after { transform: rotate(45deg); }
+.sexual-health-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: none;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, #bfe8cf 64%, var(--surface));
+  color: #17623e;
+}
+.sexual-health-icon svg { width: 1.15rem; height: 1.15rem; }
+.sexual-health-topic summary strong { display: block; font-size: 0.85rem; }
+.sexual-health-topic summary small { display: block; margin-top: 0.2rem; color: var(--muted); font-size: 0.7rem; }
+.sexual-health-topic > p { padding: 0 1rem 1rem 4.15rem; color: var(--muted); font-size: 0.78rem; line-height: 1.6; }
+.sexual-health-guide a { color: var(--rose-deep); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 .period-date-sheet {
   position: fixed;
   z-index: 80;

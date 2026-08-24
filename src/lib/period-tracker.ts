@@ -13,6 +13,20 @@ export type TrackerSettings = {
   share_with_partner?: boolean;
 };
 
+export type PeriodPrediction = {
+  start: string;
+  end: string;
+  ovulation: string;
+  fertileStart: string;
+  fertileEnd: string;
+};
+
+export type FertilityEstimate = {
+  level: "high" | "medium" | "low" | "unknown";
+  label: "High" | "Medium" | "Low" | "Not available";
+  detail: string;
+};
+
 const DAY = 86_400_000;
 export const parseDay = (value: string) => new Date(`${value}T00:00:00Z`);
 export const formatDay = (date: Date) => date.toISOString().slice(0, 10);
@@ -20,6 +34,48 @@ export const addDays = (value: string, days: number) =>
   formatDay(new Date(parseDay(value).getTime() + days * DAY));
 export const dayDifference = (from: string, to: string) =>
   Math.round((parseDay(to).getTime() - parseDay(from).getTime()) / DAY);
+
+export function fertilityEstimateForDate(
+  date: string,
+  predictions: PeriodPrediction[],
+): FertilityEstimate {
+  if (!predictions.length) {
+    return {
+      level: "unknown",
+      label: "Not available",
+      detail: "Log a period to begin estimating the fertile window.",
+    };
+  }
+
+  const window = predictions.find(
+    (item) => date >= item.fertileStart && date <= item.fertileEnd,
+  );
+  if (!window) {
+    return {
+      level: "low",
+      label: "Low",
+      detail:
+        "Outside the estimated fertile window. Pregnancy is still possible because cycle timing can change.",
+    };
+  }
+
+  const daysFromOvulation = dayDifference(window.ovulation, date);
+  if (daysFromOvulation >= -2 && daysFromOvulation <= 0) {
+    return {
+      level: "high",
+      label: "High",
+      detail:
+        "Close to estimated ovulation, when pregnancy is more likely if sperm enters the vagina.",
+    };
+  }
+
+  return {
+    level: "medium",
+    label: "Medium",
+    detail:
+      "Inside the estimated fertile window. Pregnancy is possible if sperm enters the vagina.",
+  };
+}
 
 export function trackerModel(cycles: PeriodCycle[], settings: TrackerSettings, today: string) {
   const sorted = [...cycles].sort((a, b) => a.start_date.localeCompare(b.start_date));
@@ -36,7 +92,7 @@ export function trackerModel(cycles: PeriodCycle[], settings: TrackerSettings, t
     ? Math.round(lengths.reduce((sum, value) => sum + value, 0) / lengths.length)
     : settings.default_period_length;
   const last = sorted.at(-1);
-  const predictions: { start: string; end: string; ovulation: string; fertileStart: string; fertileEnd: string }[] = [];
+  const predictions: PeriodPrediction[] = [];
   if (last) {
     let start = addDays(last.start_date, cycleLength);
     while (predictions.length < 8) {
@@ -63,5 +119,6 @@ export function trackerModel(cycles: PeriodCycle[], settings: TrackerSettings, t
   else if (inFertileWindow) phase = "Estimated fertile window";
   else if (next && today < next.ovulation) phase = "Follicular phase";
   else if (last) phase = "Luteal phase";
-  return { cycleLength, periodLength, predictions, next, currentCycleDay, daysUntilPeriod, inFertileWindow, phase };
+  const fertilityToday = fertilityEstimateForDate(today, predictions);
+  return { cycleLength, periodLength, predictions, next, currentCycleDay, daysUntilPeriod, inFertileWindow, fertilityToday, phase };
 }

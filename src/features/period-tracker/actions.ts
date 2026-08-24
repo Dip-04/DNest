@@ -117,11 +117,12 @@ export async function togglePeriodDay(form: FormData) {
   const { data: cycle } = await supabase.from("period_cycles").select("*")
     .eq("user_id", user.id).lte("start_date", selected).gte("end_date", selected).maybeSingle();
   if (!cycle) {
+    const end = addDays(selected, 4);
     const { error } = await supabase.from("period_cycles").insert({
-      user_id: user.id, start_date: selected, end_date: selected, period_length: 1,
+      user_id: user.id, start_date: selected, end_date: end, period_length: 5,
     });
     if (error) redirect("/period-tracker?error=That+day+could+not+be+logged.");
-    done("Period day added.");
+    done("Five-day period window added. You can adjust the end date anytime.");
   }
   if (cycle.start_date === selected && cycle.end_date === selected) {
     await supabase.from("period_cycles").delete().eq("id", cycle.id).eq("user_id", user.id);
