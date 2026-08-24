@@ -1201,21 +1201,193 @@ a {
 
 .moment-card {
   position: relative;
+  min-height: 31rem;
+  border: 1px solid color-mix(in srgb, var(--rose) 15%, var(--border));
+  border-radius: 1.75rem;
+  background: color-mix(in srgb, var(--surface) 97%, var(--rose-soft));
   box-shadow: var(--shadow-sm);
   transition:
-    transform 0.35s,
-    box-shadow 0.35s;
+    transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.38s ease,
+    border-color 0.38s ease;
 }
 .moment-card:hover {
-  transform: translateY(-5px) rotate(-0.35deg);
+  z-index: 2;
+  transform: translateY(-7px) scale(1.012);
+  border-color: color-mix(in srgb, var(--rose) 38%, var(--border));
   box-shadow: var(--shadow-raised);
 }
-.moment-card-image {
-  background-size: 105%;
-  transition: transform 0.35s ease, background-size 0.7s ease, box-shadow 0.35s ease;
+.moments-album-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
 }
-.moment-card-image:hover {
-  background-size: 110%;
+.moment-card-body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.25rem 1.35rem 1.35rem;
+}
+.moment-image-stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 18rem;
+  flex: none;
+  overflow: hidden;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--rose) 14%, var(--border));
+  background: #241b22;
+  cursor: zoom-in;
+}
+.moment-image-blur,
+.moment-lightbox-blur {
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.12);
+  filter: blur(24px) saturate(0.78);
+  opacity: 0.58;
+}
+.moment-image-shade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(14 8 13 / 4%) 55%, rgb(14 8 13 / 32%));
+}
+.moment-image-full {
+  z-index: 2;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.moment-card:hover .moment-image-full { transform: scale(1.018); }
+.moment-image-expand {
+  position: absolute;
+  z-index: 3;
+  right: 0.85rem;
+  bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 999px;
+  background: rgb(24 14 22 / 58%);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 750;
+  opacity: 0;
+  backdrop-filter: blur(12px);
+  transform: translateY(0.35rem);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.moment-image-stage:hover .moment-image-expand,
+.moment-image-stage:focus-visible .moment-image-expand { opacity: 1; transform: translateY(0); }
+.moment-actions { position: absolute; z-index: 5; right: 1rem; bottom: 1rem; }
+.moment-actions summary {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--muted);
+  box-shadow: 0 6px 18px rgb(37 24 32 / 10%);
+  cursor: pointer;
+  list-style: none;
+  backdrop-filter: blur(12px);
+  transition: color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.moment-actions summary::-webkit-details-marker { display: none; }
+.moment-actions summary:hover {
+  color: var(--rose-deep);
+  transform: scale(1.06);
+  border-color: color-mix(in srgb, var(--rose) 42%, var(--border));
+}
+.moment-actions-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.55rem);
+  width: 10.75rem;
+  overflow: hidden;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 18px 46px rgb(37 24 32 / 20%);
+}
+.moment-actions-menu a,
+.moment-delete-action {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.7rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.moment-actions-menu a:hover { background: var(--surface-muted); }
+.moment-delete-action { color: #b33e4b; }
+.moment-delete-action:hover { background: color-mix(in srgb, #d65c68 10%, transparent); }
+.moment-delete-action:disabled { cursor: wait; opacity: 0.6; }
+.moment-lightbox {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: clamp(0.75rem, 3vw, 2rem);
+  border: 0;
+  background: rgb(12 8 11 / 88%);
+  opacity: 0;
+  backdrop-filter: blur(14px);
+  transition: opacity 0.22s ease, display 0.22s allow-discrete;
+}
+.moment-lightbox[open] { opacity: 1; }
+.moment-lightbox::backdrop { background: rgb(12 8 11 / 72%); }
+.moment-lightbox-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: clamp(1.25rem, 3vw, 2.25rem);
+  background: #171015;
+  box-shadow: 0 30px 90px rgb(0 0 0 / 45%);
+}
+.moment-lightbox-blur { opacity: 0.32; filter: blur(38px) saturate(0.7); }
+.moment-lightbox-image { z-index: 1; padding: clamp(0.4rem, 2vw, 1.25rem); object-fit: contain; object-position: center; }
+.moment-lightbox-close {
+  position: absolute;
+  z-index: 2;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 999px;
+  background: rgb(20 12 19 / 68%);
+  color: white;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+@media (min-width: 640px) { .moments-album-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .moments-album-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) {
+  .moment-card, .moment-image-full, .moment-image-expand { transition: none; }
+  .moment-card:hover, .moment-card:hover .moment-image-full { transform: none; }
 }
 .period-calendar-grid {
   display: grid;
@@ -1332,6 +1504,12 @@ a {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 .moment-placeholder {
+  display: grid;
+  height: 18rem;
+  flex: none;
+  place-items: center;
+  align-content: center;
+  gap: 0.8rem;
   background:
     radial-gradient(
       circle at 30% 25%,
@@ -1348,6 +1526,12 @@ a {
   border: 1px solid color-mix(in srgb, var(--rose) 38%, transparent);
   border-radius: 50%;
   color: var(--rose-deep);
+}
+.moment-placeholder small {
+  color: var(--rose-deep);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
 }
 .memory-tape {
   position: absolute;
