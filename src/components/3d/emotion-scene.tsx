@@ -16,6 +16,7 @@ import {
   Quaternion,
   QuaternionKeyframeTrack,
   VectorKeyframeTrack,
+  Vector3,
   type AnimationAction,
   type Group,
   type Mesh,
@@ -164,22 +165,18 @@ type Rig = {
 };
 
 type Pose = {
-  upperArmL: [number, number, number];
-  upperArmR: [number, number, number];
+  upperArmL?: [number, number, number];
+  upperArmR?: [number, number, number];
   lowerArmL?: [number, number, number];
   lowerArmR?: [number, number, number];
   head?: [number, number, number];
   chest?: [number, number, number];
 };
 
-const IDLE_POSE: Pose = {
-  upperArmL: [0, 0, 1.14],
-  upperArmR: [0, 0, -1.14],
-  lowerArmL: [0, 0, 0],
-  lowerArmR: [0, 0, 0],
-};
+const IDLE_POSE: Pose = {};
 
 function createEmotionClips(root: Object3D, kind: EmotionAvatarKind, side: AvatarSide, isSender: boolean) {
+  root.updateWorldMatrix(true, true);
   const rig = resolveRig(root, kind);
   const clips = [createIdleClip(rig, root)];
   const emotions = EMOTION_ANIMATION_NAMES.filter((name): name is VirtualEmotionType => name !== "idle");
@@ -209,34 +206,34 @@ function normalizeName(value: string) {
 
 function poseFor(emotion: VirtualEmotionType, side: AvatarSide, isSender: boolean): Pose {
   const inward = side === "left" ? 1 : -1;
-  if (emotion === "hug") return embracePose(0.48);
-  if (emotion === "kiss") return { ...embracePose(0.82), head: [0.08, inward * 0.08, inward * 0.12], chest: [0.06, 0, 0] };
-  if (emotion === "cuddle") return { ...embracePose(0.58), head: [0.1, 0, inward * 0.16], chest: [0.08, 0, inward * 0.05] };
-  if (emotion === "love") return { ...embracePose(0.34), lowerArmL: [-1.02, 0, 0], lowerArmR: [-1.02, 0, 0], head: [-0.05, 0, 0] };
-  if (emotion === "happy") return { upperArmL: [-0.7, 0, 0.2], upperArmR: [-0.7, 0, -0.2], lowerArmL: [-0.9, 0, 0], lowerArmR: [-0.9, 0, 0], head: [-0.08, 0, 0] };
+  if (emotion === "hug") return embracePose();
+  if (emotion === "kiss") return { upperArmL: [-0.3, -0.9, 0.28], upperArmR: [0.3, -0.9, 0.28], head: [0.08, inward * 0.08, inward * 0.12], chest: [0.06, 0, 0] };
+  if (emotion === "cuddle") return { ...embracePose(), head: [0.1, 0, inward * 0.16], chest: [0.08, 0, inward * 0.05] };
+  if (emotion === "love") return { upperArmL: [0.16, -0.12, 0.98], upperArmR: [-0.16, -0.12, 0.98], lowerArmL: [0.12, 0.2, 0.98], lowerArmR: [-0.12, 0.2, 0.98], head: [-0.05, 0, 0] };
+  if (emotion === "happy") return { upperArmL: [-0.52, 0.84, 0.16], upperArmR: [0.52, 0.84, 0.16], lowerArmL: [-0.18, 0.96, 0.2], lowerArmR: [0.18, 0.96, 0.2], head: [-0.08, 0, 0] };
   if (emotion === "miss_you") return isSender
     ? { ...IDLE_POSE, head: [0.22, 0, 0], chest: [0.14, 0, 0] }
-    : { ...embracePose(0.45), head: [0.06, 0, inward * 0.1] };
+    : { ...embracePose(), head: [0.06, 0, inward * 0.1] };
   if (emotion === "flying_kiss") {
     if (!isSender) return { ...IDLE_POSE, head: [-0.04, 0, inward * 0.06] };
     return side === "left"
-      ? { ...IDLE_POSE, upperArmR: [-1.28, 0, -0.32], lowerArmR: [-1.18, 0, 0], head: [-0.04, inward * 0.05, 0] }
-      : { ...IDLE_POSE, upperArmL: [-1.28, 0, 0.32], lowerArmL: [-1.18, 0, 0], head: [-0.04, inward * 0.05, 0] };
+      ? { ...IDLE_POSE, upperArmR: [0.12, 0.2, 0.97], lowerArmR: [-0.08, 0.48, 0.87], head: [-0.04, inward * 0.05, 0] }
+      : { ...IDLE_POSE, upperArmL: [-0.12, 0.2, 0.97], lowerArmL: [0.08, 0.48, 0.87], head: [-0.04, inward * 0.05, 0] };
   }
   if (emotion === "need_you") return isSender
-    ? { upperArmL: [-0.5, 0, 0.42], upperArmR: [-0.5, 0, -0.42], lowerArmL: [-0.2, 0, 0], lowerArmR: [-0.2, 0, 0], head: [0.14, 0, 0] }
-    : embracePose(0.48);
-  if (emotion === "celebrate") return { upperArmL: [-1.85, 0, 0.22], upperArmR: [-1.85, 0, -0.22], lowerArmL: [-0.35, 0, 0], lowerArmR: [-0.35, 0, 0], head: [-0.12, 0, 0] };
+    ? { upperArmL: [-0.75, -0.2, 0.62], upperArmR: [0.75, -0.2, 0.62], lowerArmL: [-0.82, -0.12, 0.56], lowerArmR: [0.82, -0.12, 0.56], head: [0.14, 0, 0] }
+    : embracePose();
+  if (emotion === "celebrate") return { upperArmL: [-0.5, 0.85, 0.16], upperArmR: [0.5, 0.85, 0.16], lowerArmL: [-0.2, 0.96, 0.16], lowerArmR: [0.2, 0.96, 0.16], head: [-0.12, 0, 0] };
   if (emotion === "hold_hands") return side === "left"
-    ? { ...IDLE_POSE, upperArmR: [-0.72, 0, -0.54], lowerArmR: [-0.46, 0, 0], head: [-0.04, inward * 0.05, 0] }
-    : { ...IDLE_POSE, upperArmL: [-0.72, 0, 0.54], lowerArmL: [-0.46, 0, 0], head: [-0.04, inward * 0.05, 0] };
-  return isSender ? embracePose(0.46) : { ...embracePose(0.65), head: [0.15, 0, inward * 0.12], chest: [0.1, 0, 0] };
+    ? { ...IDLE_POSE, upperArmR: [0.84, -0.38, 0.38], lowerArmR: [0.88, -0.3, 0.35], head: [-0.04, inward * 0.05, 0] }
+    : { ...IDLE_POSE, upperArmL: [-0.84, -0.38, 0.38], lowerArmL: [-0.88, -0.3, 0.35], head: [-0.04, inward * 0.05, 0] };
+  return isSender ? embracePose() : { ...embracePose(), head: [0.15, 0, inward * 0.12], chest: [0.1, 0, 0] };
 }
 
-function embracePose(spread: number): Pose {
+function embracePose(): Pose {
   return {
-    upperArmL: [-1.02, 0, spread], upperArmR: [-1.02, 0, -spread],
-    lowerArmL: [-0.62, 0, 0], lowerArmR: [-0.62, 0, 0],
+    upperArmL: [-0.28, -0.08, 0.96], upperArmR: [0.28, -0.08, 0.96],
+    lowerArmL: [-0.12, 0.04, 0.99], lowerArmR: [0.12, 0.04, 0.99],
   };
 }
 
@@ -263,10 +260,29 @@ function poseTracks(rig: Rig, times: number[], poses: Pose[]): KeyframeTrack[] {
   for (const key of ["upperArmL", "upperArmR", "lowerArmL", "lowerArmR", "head", "chest"] as const) {
     const bone = rig[key];
     if (!bone) continue;
-    const deltas = poses.map((pose) => pose[key] ?? ([0, 0, 0] as [number, number, number]));
-    tracks.push(new QuaternionKeyframeTrack(`${bone.uuid}.quaternion`, times, deltas.flatMap((delta) => rotated(bone.quaternion, delta))));
+    const values = poses.flatMap((pose) => {
+      const value = pose[key];
+      if (!value) return quaternionArray(bone.quaternion);
+      return key.startsWith("upperArm") || key.startsWith("lowerArm")
+        ? quaternionArray(aimedAt(bone, value))
+        : rotated(bone.quaternion, value);
+    });
+    tracks.push(new QuaternionKeyframeTrack(`${bone.uuid}.quaternion`, times, values));
   }
   return tracks;
+}
+
+function aimedAt(bone: Bone, direction: [number, number, number]) {
+  const child = bone.children.find((value) => (value as Bone).isBone) as Bone | undefined;
+  if (!child || !bone.parent) return bone.quaternion.clone();
+  const current = child.position.clone().applyQuaternion(bone.quaternion).normalize();
+  const parentWorld = bone.parent.getWorldQuaternion(new Quaternion()).invert();
+  const target = new Vector3(...direction).normalize().applyQuaternion(parentWorld);
+  return new Quaternion().setFromUnitVectors(current, target).multiply(bone.quaternion);
+}
+
+function quaternionArray(value: Quaternion) {
+  return [value.x, value.y, value.z, value.w];
 }
 
 function rotated(base: Quaternion, delta: [number, number, number]) {
