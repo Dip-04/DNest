@@ -24,7 +24,6 @@ export function MomentImage({ src, alt }: { src: string; alt: string }) {
     <>
       <button className="moment-image-stage group/image" type="button" onClick={openPreview} aria-label={`Open full-size preview of ${alt}`}>
         <Image className="moment-image-blur" src={src} alt="" fill sizes="(min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw" unoptimized aria-hidden />
-        <span className="moment-image-shade" aria-hidden />
         <Image className="moment-image-full" src={src} alt={alt} fill sizes="(min-width: 1280px) 30vw, (min-width: 640px) 45vw, 100vw" unoptimized />
         <span className="moment-image-expand" aria-hidden><Expand className="size-4" />View full photo</span>
       </button>

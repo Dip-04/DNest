@@ -1250,12 +1250,6 @@ a {
   filter: blur(24px) saturate(0.78);
   opacity: 0.58;
 }
-.moment-image-shade {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  background: linear-gradient(180deg, rgb(14 8 13 / 4%) 55%, rgb(14 8 13 / 32%));
-}
 .moment-image-full {
   z-index: 2;
   object-fit: contain;
