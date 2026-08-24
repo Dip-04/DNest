@@ -1,7 +1,25 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { EMOTION_ANIMATION_NAMES } from "@/lib/emotion-avatar";
+
+const REQUIRED_CLIPS = [
+  "idle",
+  "walk",
+  "hug",
+  "kiss",
+  "forehead_kiss",
+  "cuddle",
+  "love",
+  "happy",
+  "miss_you",
+  "flying_kiss",
+  "need_you",
+  "celebrate",
+  "dance",
+  "hold_hands",
+  "comfort",
+  "sleep_cuddle",
+];
 
 async function readGlb(name: "boy" | "girl") {
   const binary = await readFile(path.join(process.cwd(), "public", "models", `${name}.glb`));
@@ -12,33 +30,19 @@ async function readGlb(name: "boy" | "girl") {
   return { binary, json };
 }
 
-describe("supplied couple avatars", () => {
-  it("keeps Character_2 as the rigged male avatar", async () => {
-    const { binary, json } = await readGlb("boy");
-    const joints = json.skins.flatMap((value: { joints: number[] }) => value.joints);
-    const names = joints.map((index: number) => json.nodes[index]?.name);
+describe("production couple avatars", () => {
+  it.each(["boy", "girl"] as const)("validates %s.glb for the web animation pipeline", async (name) => {
+    const { binary, json } = await readGlb(name);
+    const clips = json.animations.map((clip: { name: string }) => clip.name);
+    const nodeNames = new Set(json.nodes.map((node: { name?: string }) => node.name));
+    const morphPrimitives = json.meshes.flatMap((mesh: { primitives: { targets?: unknown[] }[] }) => mesh.primitives)
+      .filter((primitive: { targets?: unknown[] }) => primitive.targets?.length);
 
-    expect(binary.byteLength).toBeLessThan(1.1 * 1024 * 1024);
-    expect(new Set(joints).size).toBe(70);
-    expect(names).toEqual(expect.arrayContaining(["Root", "upper_arm.L", "hand.L", "thigh.R"]));
-  });
-
-  it("keeps the supplied female avatar with its face controls", async () => {
-    const { binary, json } = await readGlb("girl");
-    const joints = json.skins.flatMap((value: { joints: number[] }) => value.joints);
-    const names = joints.map((index: number) => json.nodes[index]?.name);
-    const face = json.meshes.find((value: { name?: string }) => value.name === "Mesh_face");
-
-    expect(binary.byteLength).toBeLessThan(5.2 * 1024 * 1024);
-    expect(new Set(joints).size).toBe(61);
-    expect(names).toEqual(expect.arrayContaining(["J_Hip", "J_Head", "J_L_Hand", "J_R_Thigh"]));
-    expect(face.extras.targetNames).toEqual(expect.arrayContaining(["eyelids_01", "mouth_01"]));
-  });
-
-  it("defines a distinct runtime clip for every Virtual Feeling", () => {
-    expect(EMOTION_ANIMATION_NAMES).toEqual([
-      "idle", "hug", "kiss", "cuddle", "love", "happy", "miss_you",
-      "flying_kiss", "need_you", "celebrate", "hold_hands", "comfort",
-    ]);
+    expect(binary.byteLength).toBeLessThan(600 * 1024);
+    expect(json.skins[0].joints.length).toBe(38);
+    expect(morphPrimitives.length).toBeGreaterThanOrEqual(3);
+    expect(clips).toEqual(expect.arrayContaining(REQUIRED_CLIPS));
+    for (const bone of ["Hips", "Head", "Hand_L", "Hand_R", "Index1_L", "Index1_R"])
+      expect(nodeNames.has(bone)).toBe(true);
   });
 });
