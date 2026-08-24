@@ -163,9 +163,9 @@ export default async function Page({
           ))}
         </div>
       ) : (
-        <div className="mt-7 columns-1 gap-5 sm:columns-2 xl:columns-3">
+        <div className="moments-album-grid mt-7">
           {moments.map((moment, index) => (
-            <div className="mb-5 break-inside-avoid" key={moment.id}>
+            <div className="min-w-0" key={moment.id}>
               <MomentCard moment={moment} imageUrl={signed[index]} />
             </div>
           ))}
