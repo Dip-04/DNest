@@ -38,9 +38,12 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
   initialEvents: VirtualEmotion[];
   initialPlay?: VirtualEmotion;
 }) {
-  const [events, setEvents] = useState(initialEvents);
+  const initialOpened = initialPlay?.recipient_id === userId && !initialPlay.read_at
+    ? { ...initialPlay, read_at: new Date().toISOString() }
+    : initialPlay;
+  const [events, setEvents] = useState(() => initialEvents.map((event) => event.id === initialOpened?.id ? initialOpened : event));
   const [active, setActive] = useState<VirtualEmotionType>(initialPlay?.type ?? "hug");
-  const [activeEvent, setActiveEvent] = useState<VirtualEmotion | undefined>(initialPlay);
+  const [activeEvent, setActiveEvent] = useState<VirtualEmotion | undefined>(initialOpened);
   const [replayKey, setReplayKey] = useState(0);
   const [pending, startTransition] = useTransition();
   const palettes = useMemo(() => [colorFor(userId), colorFor(nestId)], [userId, nestId]);
@@ -54,8 +57,9 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
   }, [userId]);
 
   useEffect(() => {
-    if (initialPlay?.recipient_id === userId && !initialPlay.read_at) markRead(initialPlay);
-  }, [initialPlay, markRead, userId]);
+    if (initialPlay?.recipient_id === userId && !initialPlay.read_at)
+      void markVirtualEmotionRead(initialPlay.id);
+  }, [initialPlay, userId]);
 
   useEffect(() => {
     const supabase = createClient();
