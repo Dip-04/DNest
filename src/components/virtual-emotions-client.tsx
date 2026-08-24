@@ -2,11 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { Heart, History, RotateCcw, Send, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { LocalDateTime } from "@/components/local-date-time";
 import { showToast } from "@/components/toast-viewport";
 import { markVirtualEmotionRead, sendVirtualEmotion } from "@/features/emotions/actions";
 import { createClient } from "@/lib/supabase/client";
+import { emotionAvatarForGender } from "@/lib/emotion-avatar";
 import type { VirtualEmotion, VirtualEmotionType } from "@/types/database";
 
 const EmotionScene = dynamic(
@@ -30,11 +31,13 @@ export const emotionOptions: { type: VirtualEmotionType; emoji: string; label: s
 
 const optionFor = (type: VirtualEmotionType) => emotionOptions.find((item) => item.type === type)!;
 
-export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, initialEvents, initialPlay }: {
+export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, myGender, partnerGender, initialEvents, initialPlay }: {
   nestId: string;
   userId: string;
   myName: string;
   partnerName: string;
+  myGender?: string | null;
+  partnerGender?: string | null;
   initialEvents: VirtualEmotion[];
   initialPlay?: VirtualEmotion;
 }) {
@@ -46,7 +49,8 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
   const [activeEvent, setActiveEvent] = useState<VirtualEmotion | undefined>(initialOpened);
   const [replayKey, setReplayKey] = useState(0);
   const [pending, startTransition] = useTransition();
-  const palettes = useMemo(() => [colorFor(userId), colorFor(nestId)], [userId, nestId]);
+  const myAvatar = emotionAvatarForGender(myGender, "male");
+  const partnerAvatar = emotionAvatarForGender(partnerGender, "female");
 
   const markRead = useCallback((event: VirtualEmotion) => {
     if (event.recipient_id !== userId || event.read_at) return;
@@ -93,6 +97,7 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
 
   const activeOption = optionFor(active);
   const received = activeEvent?.recipient_id === userId;
+  const senderSide = activeEvent?.sender_id === userId ? "left" : activeEvent ? "right" : "left";
   return (
     <div className="mt-7 grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
       <section className="emotion-stage surface overflow-hidden">
@@ -102,7 +107,7 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
           <p>{received ? `${partnerName} sent this to you` : `A little moment for ${partnerName}`}</p>
         </div>
         <div className="emotion-canvas-wrap">
-          <EmotionScene emotion={active} replayKey={replayKey} leftColor={palettes[0]} rightColor={palettes[1]} />
+          <EmotionScene emotion={active} replayKey={replayKey} leftAvatar={myAvatar} rightAvatar={partnerAvatar} senderSide={senderSide} />
           <div className="emotion-name emotion-name-left">{myName}</div>
           <div className="emotion-name emotion-name-right">{partnerName}</div>
           <div className="emotion-heart-particles" aria-hidden><i>♥</i><i>♥</i><i>♥</i><i>♥</i></div>
@@ -135,9 +140,4 @@ export function VirtualEmotionsClient({ nestId, userId, myName, partnerName, ini
       </aside>
     </div>
   );
-}
-
-function colorFor(value: string) {
-  const colors = ["#c86f89", "#8f6ca6", "#d48d6f", "#718f86", "#a86578"];
-  return colors[[...value].reduce((sum, char) => sum + char.charCodeAt(0), 0) % colors.length];
 }
