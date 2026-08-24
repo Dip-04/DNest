@@ -42,6 +42,7 @@ grant select,insert,update,delete on public.period_cycles to authenticated;
 
 -- A signed avatar may be requested by either its owner or their active Nest partner.
 drop policy if exists avatar_owner_read on storage.objects;
+drop policy if exists avatar_owner_or_partner_read on storage.objects;
 create policy avatar_owner_or_partner_read on storage.objects for select using(
   bucket_id='avatars' and (
     (storage.foldername(name))[1]=auth.uid()::text or

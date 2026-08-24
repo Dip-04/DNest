@@ -44,11 +44,27 @@ create table if not exists public.period_day_moods (
   primary key(user_id,local_date)
 );
 alter table public.period_day_moods enable row level security;
+drop trigger if exists touch_period_day_moods on public.period_day_moods;
 create trigger touch_period_day_moods before update on public.period_day_moods
   for each row execute function app_private.touch_updated_at();
 
 drop policy if exists period_settings_private on public.period_tracker_settings;
 drop policy if exists period_cycles_private on public.period_cycles;
+drop policy if exists period_settings_owner_select on public.period_tracker_settings;
+drop policy if exists period_settings_partner_select on public.period_tracker_settings;
+drop policy if exists period_settings_owner_insert on public.period_tracker_settings;
+drop policy if exists period_settings_owner_update on public.period_tracker_settings;
+drop policy if exists period_settings_owner_delete on public.period_tracker_settings;
+drop policy if exists period_cycles_owner_select on public.period_cycles;
+drop policy if exists period_cycles_partner_select on public.period_cycles;
+drop policy if exists period_cycles_owner_insert on public.period_cycles;
+drop policy if exists period_cycles_owner_update on public.period_cycles;
+drop policy if exists period_cycles_owner_delete on public.period_cycles;
+drop policy if exists period_moods_owner_select on public.period_day_moods;
+drop policy if exists period_moods_partner_select on public.period_day_moods;
+drop policy if exists period_moods_owner_insert on public.period_day_moods;
+drop policy if exists period_moods_owner_update on public.period_day_moods;
+drop policy if exists period_moods_owner_delete on public.period_day_moods;
 
 create policy period_settings_owner_select on public.period_tracker_settings
   for select using(user_id=auth.uid());
