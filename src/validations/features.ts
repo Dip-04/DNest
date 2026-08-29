@@ -9,6 +9,11 @@ export const nestDeleteSchema = z.object({
   nest_id: uuid,
   confirmation: z.string().trim().min(2).max(80),
 });
+export const nestDeletionResponseSchema = z.object({
+  nest_id: uuid,
+  decision: z.enum(["approve", "decline"]),
+  partner_note: z.string().trim().min(1, "Please leave your partner a final note.").max(1000),
+});
 export const inviteSchema = z.object({
   nest_id: uuid,
   email: z.email().optional().or(z.literal("")),

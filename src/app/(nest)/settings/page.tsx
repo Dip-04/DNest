@@ -62,7 +62,9 @@ export default async function Page({
     .single();
   const { data: deletionRequest } = await supabase
     .from("nest_deletion_requests")
-    .select("status,requested_by,partner_id,requested_at,responded_at")
+    .select(
+      "status,requested_by,partner_id,partner_note,requested_at,responded_at",
+    )
     .eq("nest_id", context.nest.id)
     .maybeSingle();
   const avatarUrl = me.avatar_path
@@ -320,6 +322,14 @@ export default async function Page({
                       The choice is back with you. This final step hides the
                       Nest for both of you, but you can recover it for 30 days.
                     </p>
+                    {deletionRequest.partner_note && (
+                      <blockquote className="mt-4 border-l-4 border-[var(--rose)] pl-4 text-sm italic leading-6">
+                        <span className="eyebrow mb-1 block">
+                          Your partner’s final note
+                        </span>
+                        {deletionRequest.partner_note}
+                      </blockquote>
+                    )}
                   </div>
                   <form action={deleteNest} className="grid gap-4">
                     <input
@@ -361,10 +371,20 @@ export default async function Page({
               ) : (
                 <>
                   {deletionRequest?.status === "declined" && (
-                    <p className="mt-4 text-sm font-bold">
-                      Your partner declined the previous request. Your Nest is
-                      still here.
-                    </p>
+                    <div className="mt-4">
+                      <p className="text-sm font-bold">
+                        Your partner declined the previous request. Your Nest is
+                        still here.
+                      </p>
+                      {deletionRequest.partner_note && (
+                        <blockquote className="mt-3 border-l-4 border-[var(--rose)] pl-4 text-sm italic leading-6">
+                          <span className="eyebrow mb-1 block">
+                            Your partner’s note
+                          </span>
+                          {deletionRequest.partner_note}
+                        </blockquote>
+                      )}
+                    </div>
                   )}
                   <form
                     action={requestNestDeletion}
@@ -407,29 +427,42 @@ export default async function Page({
                 are ready to let it go? Approval does not delete it immediately;
                 the final choice goes back to the partner who created it.
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <form action={respondToNestDeletion}>
-                  <input type="hidden" name="nest_id" value={context.nest.id} />
-                  <input type="hidden" name="decision" value="approve" />
+              <form action={respondToNestDeletion} className="mt-5 grid gap-4">
+                <input type="hidden" name="nest_id" value={context.nest.id} />
+                <label className="label">
+                  Your reason and final note to your partner
+                  <textarea
+                    className="field min-h-28 resize-y"
+                    name="partner_note"
+                    maxLength={1000}
+                    placeholder="Say what you feel and why you made this choice…"
+                    required
+                  />
+                </label>
+                <p className="muted text-xs">
+                  Your partner will see this note before making the final
+                  decision.
+                </p>
+                <div className="flex flex-wrap gap-3">
                   <FormSubmitButton
                     className="btn btn-danger"
                     pendingLabel="Responding…"
-                    confirmMessage="Are you sure you approve deleting your shared Nest? Your partner will still need to confirm the final step."
+                    confirmMessage="Are you sure you approve deleting your shared Nest? Your note will be shown to your partner before their final decision."
+                    name="decision"
+                    value="approve"
                   >
                     Approve deletion
                   </FormSubmitButton>
-                </form>
-                <form action={respondToNestDeletion}>
-                  <input type="hidden" name="nest_id" value={context.nest.id} />
-                  <input type="hidden" name="decision" value="decline" />
                   <FormSubmitButton
                     className="btn btn-secondary"
                     pendingLabel="Keeping Nest…"
+                    name="decision"
+                    value="decline"
                   >
                     Keep our Nest
                   </FormSubmitButton>
-                </form>
-              </div>
+                </div>
+              </form>
             </div>
           ) : deletionRequest?.status === "approved" ? (
             <p className="muted mt-3 text-sm">

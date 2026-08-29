@@ -8,11 +8,15 @@ export function FormSubmitButton({
   pendingLabel,
   className = "btn btn-primary",
   confirmMessage,
+  name,
+  value,
 }: {
   children: React.ReactNode;
   pendingLabel: string;
   className?: string;
   confirmMessage?: string;
+  name?: string;
+  value?: string;
 }) {
   const { pending } = useFormStatus();
   return (
@@ -21,6 +25,8 @@ export function FormSubmitButton({
       type="submit"
       disabled={pending}
       aria-disabled={pending}
+      name={name}
+      value={value}
       onClick={(event) => {
         if (confirmMessage && !window.confirm(confirmMessage)) {
           event.preventDefault();

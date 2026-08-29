@@ -14,6 +14,7 @@ import {
   momentSchema,
   moodSchema,
   nestDeleteSchema,
+  nestDeletionResponseSchema,
   nestSchema,
   nestUpdateSchema,
   noteSchema,
@@ -165,29 +166,26 @@ export async function requestNestDeletion(form: FormData) {
 }
 
 export async function respondToNestDeletion(form: FormData) {
-  const nestId = uuid.safeParse(form.get("nest_id"));
-  const decision = form.get("decision");
-  if (!nestId.success || (decision !== "approve" && decision !== "decline"))
-    fail("/settings", "That deletion request could not be identified.");
+  const parsed = nestDeletionResponseSchema.safeParse(Object.fromEntries(form));
+  if (!parsed.success) fail("/settings", firstIssue(parsed.error));
   const { supabase, user } = await auth();
-  const approved = decision === "approve";
+  const approved = parsed.data.decision === "approve";
   const { error } = await supabase.rpc("respond_to_nest_deletion", {
-    p_nest_id: nestId.data,
+    p_nest_id: parsed.data.nest_id,
     p_approve: approved,
+    p_partner_note: parsed.data.partner_note,
   });
   if (error)
     fail("/settings", "Your response could not be saved. Please try again.");
 
   await notifyPartner({
-    nestId: nestId.data,
+    nestId: parsed.data.nest_id,
     actorId: user.id,
     kind: "nest_deletion",
     title: approved
       ? "Your partner approved the deletion request"
       : "Your partner wants to keep your Nest",
-    body: approved
-      ? "The decision is back with you. Nothing is deleted until you confirm once more."
-      : "Your Nest is still here. Take time to talk together.",
+    body: "Your partner left a personal note for you. Open the request to read it.",
     targetPath: "/settings",
     createInApp: false,
   });

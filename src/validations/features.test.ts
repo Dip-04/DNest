@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   momentSchema,
   nestDeleteSchema,
+  nestDeletionResponseSchema,
   nestUpdateSchema,
   noteSchema,
 } from "@/validations/features";
@@ -58,4 +59,22 @@ describe("Nest management validation", () => {
     expect(
       nestDeleteSchema.safeParse({ nest_id: id, confirmation: "" }).success,
     ).toBe(false));
+
+  it("requires the responding partner to leave a final note", () =>
+    expect(
+      nestDeletionResponseSchema.safeParse({
+        nest_id: id,
+        decision: "approve",
+        partner_note: "   ",
+      }).success,
+    ).toBe(false));
+
+  it("accepts a partner response with a final note", () =>
+    expect(
+      nestDeletionResponseSchema.safeParse({
+        nest_id: id,
+        decision: "decline",
+        partner_note: "I am not ready to let our memories go.",
+      }).success,
+    ).toBe(true));
 });
