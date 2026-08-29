@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { Heart, Link2, Plus } from "lucide-react";
-import { acceptInvite, createNest } from "@/features/shared/actions";
+import { Heart, Link2, Plus, Undo2 } from "lucide-react";
+import {
+  acceptInvite,
+  createNest,
+  recoverNest,
+} from "@/features/shared/actions";
 import { getNestContext } from "@/lib/nest";
 import { redirect } from "next/navigation";
 import { privateMetadata } from "@/lib/seo";
+import { createClient } from "@/lib/supabase/server";
+import { LocalDateTime } from "@/components/local-date-time";
+import { FormSubmitButton } from "@/components/form-submit-button";
 export const metadata: Metadata = privateMetadata("Create or join your Nest");
 export default async function Page({
   searchParams,
@@ -11,6 +18,10 @@ export default async function Page({
   searchParams: Promise<{ message?: string; token?: string }>;
 }) {
   if (await getNestContext()) redirect("/home");
+  const supabase = await createClient();
+  const { data: recoverableNests } = await supabase.rpc(
+    "get_recoverable_owned_nests",
+  );
   const q = await searchParams;
   return (
     <main className="grid min-h-screen place-items-center p-5">
@@ -36,6 +47,36 @@ export default async function Page({
             </p>
           )}
         </div>
+        {recoverableNests?.map(
+          (nest: {
+            nest_id: string;
+            nest_name: string;
+            recoverable_until: string;
+          }) => (
+            <section
+              className="surface card mx-auto mt-8 max-w-2xl border-[var(--rose)]"
+              key={nest.nest_id}
+            >
+              <Undo2 className="size-6 text-[var(--rose)]" />
+              <h2 className="display mt-4 text-3xl">Rescue {nest.nest_name}</h2>
+              <p className="muted mt-2 text-sm leading-6">
+                Your shared memories are still safely held. Recovery is
+                available until <LocalDateTime value={nest.recoverable_until} />
+                .
+              </p>
+              <form action={recoverNest} className="mt-5">
+                <input type="hidden" name="nest_id" value={nest.nest_id} />
+                <FormSubmitButton
+                  className="btn btn-primary"
+                  pendingLabel="Recovering Nest…"
+                  confirmMessage="Bring this Nest and all of its shared memories back for both partners?"
+                >
+                  Recover our Nest
+                </FormSubmitButton>
+              </form>
+            </section>
+          ),
+        )}
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           <section className="surface card p-7">
             <Plus className="size-6 text-[var(--rose)]" />

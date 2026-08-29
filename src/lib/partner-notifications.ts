@@ -15,7 +15,8 @@ export type NotificationKind =
   | "wishlist"
   | "moment"
   | "period_tracker"
-  | "virtual_emotion";
+  | "virtual_emotion"
+  | "nest_deletion";
 
 type PartnerNotification = {
   nestId: string;
@@ -28,6 +29,7 @@ type PartnerNotification = {
 };
 
 function preferenceEnabled(value: unknown, kind: NotificationKind) {
+  if (kind === "nest_deletion") return true;
   if (!value || typeof value !== "object" || Array.isArray(value)) return true;
   return (value as Record<string, unknown>)[kind] !== false;
 }

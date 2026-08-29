@@ -13,8 +13,11 @@ import { EditableFormSection } from "@/components/editable-form-section";
 import { LocationFields } from "@/components/location-fields";
 import { ImageUploadField } from "@/components/image-upload-field";
 import {
+  cancelNestDeletion,
   createInvite,
   deleteNest,
+  requestNestDeletion,
+  respondToNestDeletion,
   savePreferences,
   updateNest,
   updateProfile,
@@ -57,9 +60,17 @@ export default async function Page({
     .select("notifications")
     .eq("user_id", context.userId)
     .single();
+  const { data: deletionRequest } = await supabase
+    .from("nest_deletion_requests")
+    .select("status,requested_by,partner_id,requested_at,responded_at")
+    .eq("nest_id", context.nest.id)
+    .maybeSingle();
   const avatarUrl = me.avatar_path
-    ? (await supabase.storage.from("avatars").createSignedUrl(me.avatar_path, 900))
-        .data?.signedUrl
+    ? (
+        await supabase.storage
+          .from("avatars")
+          .createSignedUrl(me.avatar_path, 900)
+      ).data?.signedUrl
     : undefined;
   const q = await searchParams;
   const flags = (preferences?.notifications ?? {}) as Record<string, boolean>;
@@ -78,7 +89,10 @@ export default async function Page({
         </p>
       )}
       <div className="mt-7 grid gap-5 lg:grid-cols-2">
-        <EditableFormSection action={updateNest} className="surface card grid gap-4">
+        <EditableFormSection
+          action={updateNest}
+          className="surface card grid gap-4"
+        >
           <Pencil className="size-6 text-[var(--rose)]" />
           <h2 className="display text-3xl">Your Nest</h2>
           <input type="hidden" name="nest_id" value={context.nest.id} />
@@ -269,33 +283,167 @@ export default async function Page({
           {isNestCreator ? (
             <>
               <p className="muted mt-3 max-w-3xl text-sm leading-6">
-                Deleting this Nest permanently removes its shared Moments, Love
-                Notes, plans, settings, and private media for both partners.
-                This cannot be undone.
+                Deleting affects both of you, so your partner must approve the
+                request before the final decision returns to you. A deleted Nest
+                can be recovered with all its memories for 30 days.
               </p>
-              <form action={deleteNest} className="mt-5 grid max-w-xl gap-4">
-                <input type="hidden" name="nest_id" value={context.nest.id} />
-                <label className="label">
-                  Type <strong>{context.nest.name}</strong> to confirm
-                  <input
-                    className="field"
-                    name="confirmation"
-                    autoComplete="off"
-                    required
-                  />
-                </label>
-                <FormSubmitButton
-                  className="btn btn-danger w-fit"
-                  pendingLabel="Deleting Nest…"
-                  confirmMessage="Permanently delete this Nest and all shared relationship data?"
-                >
-                  Delete Nest Permanently
-                </FormSubmitButton>
-              </form>
+              {deletionRequest?.status === "pending_partner" ? (
+                <div className="mt-5">
+                  <p className="font-bold">Waiting for your partner</p>
+                  <p className="muted mt-1 text-sm">
+                    Nothing can be deleted until they respond. You can withdraw
+                    the request at any time.
+                  </p>
+                  <form action={cancelNestDeletion} className="mt-4">
+                    <input
+                      type="hidden"
+                      name="nest_id"
+                      value={context.nest.id}
+                    />
+                    <FormSubmitButton
+                      className="btn btn-secondary"
+                      pendingLabel="Cancelling…"
+                    >
+                      Cancel deletion request
+                    </FormSubmitButton>
+                  </form>
+                </div>
+              ) : deletionRequest?.status === "approved" ? (
+                <div className="mt-5 grid max-w-xl gap-4">
+                  <div>
+                    <p className="font-bold">
+                      {deletionRequest.partner_id
+                        ? "Your partner approved the request"
+                        : "Your deletion request is ready"}
+                    </p>
+                    <p className="muted mt-1 text-sm">
+                      The choice is back with you. This final step hides the
+                      Nest for both of you, but you can recover it for 30 days.
+                    </p>
+                  </div>
+                  <form action={deleteNest} className="grid gap-4">
+                    <input
+                      type="hidden"
+                      name="nest_id"
+                      value={context.nest.id}
+                    />
+                    <label className="label">
+                      Type <strong>{context.nest.name}</strong> to confirm
+                      <input
+                        className="field"
+                        name="confirmation"
+                        autoComplete="off"
+                        required
+                      />
+                    </label>
+                    <FormSubmitButton
+                      className="btn btn-danger w-fit"
+                      pendingLabel="Deleting Nest…"
+                      confirmMessage="Are you sure you are ready to let this shared place go? Your memories can be rescued for 30 days."
+                    >
+                      Delete Nest
+                    </FormSubmitButton>
+                  </form>
+                  <form action={cancelNestDeletion}>
+                    <input
+                      type="hidden"
+                      name="nest_id"
+                      value={context.nest.id}
+                    />
+                    <FormSubmitButton
+                      className="btn btn-secondary"
+                      pendingLabel="Keeping Nest…"
+                    >
+                      Keep our Nest
+                    </FormSubmitButton>
+                  </form>
+                </div>
+              ) : (
+                <>
+                  {deletionRequest?.status === "declined" && (
+                    <p className="mt-4 text-sm font-bold">
+                      Your partner declined the previous request. Your Nest is
+                      still here.
+                    </p>
+                  )}
+                  <form
+                    action={requestNestDeletion}
+                    className="mt-5 grid max-w-xl gap-4"
+                  >
+                    <input
+                      type="hidden"
+                      name="nest_id"
+                      value={context.nest.id}
+                    />
+                    <label className="label">
+                      Type <strong>{context.nest.name}</strong> to request
+                      deletion
+                      <input
+                        className="field"
+                        name="confirmation"
+                        autoComplete="off"
+                        required
+                      />
+                    </label>
+                    <FormSubmitButton
+                      className="btn btn-danger w-fit"
+                      pendingLabel="Sending request…"
+                      confirmMessage="Are you sure you want to ask your partner to delete the place holding your shared memories?"
+                    >
+                      Ask to delete our Nest
+                    </FormSubmitButton>
+                  </form>
+                </>
+              )}
             </>
+          ) : deletionRequest?.status === "pending_partner" &&
+            deletionRequest.partner_id === context.userId ? (
+            <div className="mt-3 max-w-3xl">
+              <p className="text-lg font-bold">
+                Your partner wants to delete your Nest.
+              </p>
+              <p className="muted mt-2 text-sm leading-6">
+                This place carries memories you made together. Are you sure you
+                are ready to let it go? Approval does not delete it immediately;
+                the final choice goes back to the partner who created it.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <form action={respondToNestDeletion}>
+                  <input type="hidden" name="nest_id" value={context.nest.id} />
+                  <input type="hidden" name="decision" value="approve" />
+                  <FormSubmitButton
+                    className="btn btn-danger"
+                    pendingLabel="Responding…"
+                    confirmMessage="Are you sure you approve deleting your shared Nest? Your partner will still need to confirm the final step."
+                  >
+                    Approve deletion
+                  </FormSubmitButton>
+                </form>
+                <form action={respondToNestDeletion}>
+                  <input type="hidden" name="nest_id" value={context.nest.id} />
+                  <input type="hidden" name="decision" value="decline" />
+                  <FormSubmitButton
+                    className="btn btn-secondary"
+                    pendingLabel="Keeping Nest…"
+                  >
+                    Keep our Nest
+                  </FormSubmitButton>
+                </form>
+              </div>
+            </div>
+          ) : deletionRequest?.status === "approved" ? (
+            <p className="muted mt-3 text-sm">
+              You approved this request. The creator must now make the final
+              decision, and the Nest remains available until then.
+            </p>
+          ) : deletionRequest?.status === "declined" ? (
+            <p className="muted mt-3 text-sm">
+              You chose to keep this Nest. Nothing has been deleted.
+            </p>
           ) : (
             <p className="muted mt-3 text-sm">
-              Only the partner who created this Nest can permanently delete it.
+              Only the partner who created this Nest can start deletion. You
+              will be asked for approval before anything changes.
             </p>
           )}
         </section>

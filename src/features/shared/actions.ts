@@ -2,7 +2,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyPartner } from "@/lib/partner-notifications";
 import { safeNextPath } from "@/lib/route-access";
 import { isValidTimeZone, zonedDateTimeToISOString } from "@/lib/date";
@@ -123,36 +122,98 @@ export async function updateNest(form: FormData) {
   succeed("/settings", "Your Nest details were updated.");
 }
 
-async function collectNestStorageFiles(
-  admin: NonNullable<ReturnType<typeof createAdminClient>>,
-  bucket: string,
-  prefix: string,
-): Promise<{ paths: string[]; error: boolean }> {
-  const paths: string[] = [];
-  let offset = 0;
-  const pageSize = 1000;
-  while (true) {
-    const { data, error } = await admin.storage.from(bucket).list(prefix, {
-      limit: pageSize,
-      offset,
-      sortBy: { column: "name", order: "asc" },
-    });
-    if (error) return { paths, error: true };
-    const entries = data ?? [];
-    for (const entry of entries) {
-      const path = `${prefix}/${entry.name}`;
-      if (entry.id) {
-        paths.push(path);
-      } else {
-        const nested = await collectNestStorageFiles(admin, bucket, path);
-        if (nested.error) return { paths, error: true };
-        paths.push(...nested.paths);
-      }
-    }
-    if (entries.length < pageSize) break;
-    offset += pageSize;
-  }
-  return { paths, error: false };
+export async function requestNestDeletion(form: FormData) {
+  const parsed = nestDeleteSchema.safeParse(Object.fromEntries(form));
+  if (!parsed.success) fail("/settings", firstIssue(parsed.error));
+  const { supabase, user } = await auth();
+  const { data: nest, error: nestError } = await supabase
+    .from("nests")
+    .select("name,created_by")
+    .eq("id", parsed.data.nest_id)
+    .maybeSingle();
+  if (nestError || !nest) fail("/settings", "That Nest could not be found.");
+  if (nest.created_by !== user.id)
+    fail("/settings", "Only the person who created this Nest can delete it.");
+  if (parsed.data.confirmation !== nest.name)
+    fail("/settings", `Type ${nest.name} exactly to confirm deletion.`);
+
+  const { data: status, error } = await supabase.rpc("request_nest_deletion", {
+    p_nest_id: parsed.data.nest_id,
+  });
+  if (error)
+    fail(
+      "/settings",
+      "The deletion request could not be sent. Please try again.",
+    );
+
+  await notifyPartner({
+    nestId: parsed.data.nest_id,
+    actorId: user.id,
+    kind: "nest_deletion",
+    title: "Your partner asked to delete your Nest",
+    body: "This holds your shared memories. Please take a breath and decide together.",
+    targetPath: "/settings",
+    createInApp: false,
+  });
+  revalidatePath("/", "layout");
+  succeed(
+    "/settings",
+    status === "approved"
+      ? "Your Nest is ready for your final deletion confirmation."
+      : "Your partner has been asked to approve or decline the deletion request.",
+  );
+}
+
+export async function respondToNestDeletion(form: FormData) {
+  const nestId = uuid.safeParse(form.get("nest_id"));
+  const decision = form.get("decision");
+  if (!nestId.success || (decision !== "approve" && decision !== "decline"))
+    fail("/settings", "That deletion request could not be identified.");
+  const { supabase, user } = await auth();
+  const approved = decision === "approve";
+  const { error } = await supabase.rpc("respond_to_nest_deletion", {
+    p_nest_id: nestId.data,
+    p_approve: approved,
+  });
+  if (error)
+    fail("/settings", "Your response could not be saved. Please try again.");
+
+  await notifyPartner({
+    nestId: nestId.data,
+    actorId: user.id,
+    kind: "nest_deletion",
+    title: approved
+      ? "Your partner approved the deletion request"
+      : "Your partner wants to keep your Nest",
+    body: approved
+      ? "The decision is back with you. Nothing is deleted until you confirm once more."
+      : "Your Nest is still here. Take time to talk together.",
+    targetPath: "/settings",
+    createInApp: false,
+  });
+  revalidatePath("/settings");
+  succeed(
+    "/settings",
+    approved
+      ? "You approved the request. Your partner must make the final decision."
+      : "You declined the request. Your Nest has not been deleted.",
+  );
+}
+
+export async function cancelNestDeletion(form: FormData) {
+  const nestId = uuid.safeParse(form.get("nest_id"));
+  if (!nestId.success)
+    fail("/settings", "That deletion request could not be identified.");
+  const { supabase } = await auth();
+  const { error } = await supabase.rpc("cancel_nest_deletion", {
+    p_nest_id: nestId.data,
+  });
+  if (error) fail("/settings", "The deletion request could not be cancelled.");
+  revalidatePath("/settings");
+  succeed(
+    "/settings",
+    "The deletion request was cancelled. Your Nest is safe.",
+  );
 }
 
 export async function deleteNest(form: FormData) {
@@ -170,53 +231,36 @@ export async function deleteNest(form: FormData) {
   if (parsed.data.confirmation !== nest.name)
     fail("/settings", `Type ${nest.name} exactly to confirm deletion.`);
 
-  const admin = createAdminClient();
-  if (!admin)
-    fail(
-      "/settings",
-      "Nest deletion is not configured. Add the server-only Supabase service role key.",
-    );
-
-  const buckets = [
-    "moment-media",
-    "time-capsules",
-    "wishlist-images",
-    "relationship-assets",
-  ];
-  const filesByBucket: { bucket: string; paths: string[] }[] = [];
-  for (const bucket of buckets) {
-    const result = await collectNestStorageFiles(
-      admin,
-      bucket,
-      parsed.data.nest_id,
-    );
-    if (result.error)
-      fail(
-        "/settings",
-        "Private media could not be checked, so the Nest was not deleted.",
-      );
-    filesByBucket.push({ bucket, paths: result.paths });
-  }
-  for (const { bucket, paths } of filesByBucket) {
-    for (let index = 0; index < paths.length; index += 100) {
-      const { error } = await admin.storage
-        .from(bucket)
-        .remove(paths.slice(index, index + 100));
-      if (error)
-        fail(
-          "/settings",
-          "Private media could not be removed, so Nest deletion stopped.",
-        );
-    }
-  }
-
-  const { error } = await supabase.rpc("delete_owned_nest", {
+  const { error } = await supabase.rpc("soft_delete_owned_nest", {
     p_nest_id: parsed.data.nest_id,
   });
   if (error)
-    fail("/settings", "The Nest could not be deleted. Please try again.");
+    fail(
+      "/settings",
+      "Partner approval is required before this Nest can be deleted.",
+    );
   revalidatePath("/", "layout");
-  succeed("/onboarding", "Your Nest and its shared data were deleted.");
+  succeed(
+    "/onboarding",
+    "Your Nest is deleted for now. You can recover it here for the next 30 days.",
+  );
+}
+
+export async function recoverNest(form: FormData) {
+  const nestId = uuid.safeParse(form.get("nest_id"));
+  if (!nestId.success)
+    fail("/onboarding", "That recoverable Nest could not be identified.");
+  const { supabase } = await auth();
+  const { error } = await supabase.rpc("recover_owned_nest", {
+    p_nest_id: nestId.data,
+  });
+  if (error)
+    fail(
+      "/onboarding",
+      "This Nest could not be recovered. The recovery window may have ended, or you may already belong to another Nest.",
+    );
+  revalidatePath("/", "layout");
+  succeed("/home", "Your Nest and all of its shared memories are back.");
 }
 
 export async function acceptInvite(form: FormData) {
@@ -245,7 +289,10 @@ export async function createMoment(form: FormData) {
   const parsed = momentSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/moments/new", firstIssue(parsed.error));
   if (!isValidTimeZone(parsed.data.timezone))
-    fail("/moments/new", "Your local timezone could not be detected. Refresh and try again.");
+    fail(
+      "/moments/new",
+      "Your local timezone could not be detected. Refresh and try again.",
+    );
   const files = form
     .getAll("photos")
     .filter((value): value is File => value instanceof File && value.size > 0);
@@ -269,7 +316,11 @@ export async function createMoment(form: FormData) {
     .from("moments")
     .insert({
       ...parsed.data,
-      moment_at: localDateTimeOrFail(parsed.data.moment_at, parsed.data.timezone, "/moments/new"),
+      moment_at: localDateTimeOrFail(
+        parsed.data.moment_at,
+        parsed.data.timezone,
+        "/moments/new",
+      ),
       created_by: user.id,
       location_name: parsed.data.location_name || null,
       mood: parsed.data.mood || null,
@@ -328,10 +379,14 @@ export async function updateMoment(form: FormData) {
   if (!isValidTimeZone(parsed.data.timezone))
     fail(`/moments/${id.data}/edit`, "Choose a valid timezone and try again.");
   const imageValue = form.get("image");
-  const image = imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
+  const image =
+    imageValue instanceof File && imageValue.size > 0 ? imageValue : null;
   const removeImage = form.get("remove_image") === "true";
   if (image && (!IMAGE_TYPES.has(image.type) || image.size > PROFILE_IMAGE_MAX))
-    fail(`/moments/${id.data}/edit`, "Choose a JPG, PNG, WebP, or AVIF image up to 5 MB.");
+    fail(
+      `/moments/${id.data}/edit`,
+      "Choose a JPG, PNG, WebP, or AVIF image up to 5 MB.",
+    );
   const { supabase, user } = await auth();
   const { data: existingMedia } = await supabase
     .from("moment_media")
@@ -343,7 +398,11 @@ export async function updateMoment(form: FormData) {
     .update({
       title: parsed.data.title,
       story: parsed.data.story,
-      moment_at: localDateTimeOrFail(parsed.data.moment_at, parsed.data.timezone, `/moments/${id.data}/edit`),
+      moment_at: localDateTimeOrFail(
+        parsed.data.moment_at,
+        parsed.data.timezone,
+        `/moments/${id.data}/edit`,
+      ),
       timezone: parsed.data.timezone,
       category: parsed.data.category,
       location_name: parsed.data.location_name || null,
@@ -379,7 +438,10 @@ export async function updateMoment(form: FormData) {
     await supabase
       .from("moment_media")
       .delete()
-      .in("id", existingMedia.map((item) => item.id));
+      .in(
+        "id",
+        existingMedia.map((item) => item.id),
+      );
     await supabase.storage
       .from("moment-media")
       .remove(existingMedia.map((item) => item.storage_path));
@@ -485,7 +547,10 @@ export async function createNote(form: FormData) {
   const parsed = noteSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/notes", firstIssue(parsed.error));
   if (!isValidTimeZone(parsed.data.timezone))
-    fail("/notes", "Your local timezone could not be detected. Refresh and try again.");
+    fail(
+      "/notes",
+      "Your local timezone could not be detected. Refresh and try again.",
+    );
   const { supabase, user } = await auth();
   const scheduled = Boolean(parsed.data.deliver_at);
   const { error } = await supabase.from("love_notes").insert({
@@ -496,7 +561,11 @@ export async function createNote(form: FormData) {
     theme: parsed.data.theme,
     status: scheduled ? "scheduled" : "delivered",
     deliver_at: parsed.data.deliver_at
-      ? localDateTimeOrFail(parsed.data.deliver_at, parsed.data.timezone, "/notes")
+      ? localDateTimeOrFail(
+          parsed.data.deliver_at,
+          parsed.data.timezone,
+          "/notes",
+        )
       : new Date().toISOString(),
     delivered_at: scheduled ? null : new Date().toISOString(),
   });
@@ -542,11 +611,18 @@ export async function createMeetup(form: FormData) {
   const parsed = meetupSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/plans", firstIssue(parsed.error));
   if (!isValidTimeZone(parsed.data.timezone))
-    fail("/plans", "Your local timezone could not be detected. Refresh and try again.");
+    fail(
+      "/plans",
+      "Your local timezone could not be detected. Refresh and try again.",
+    );
   const { supabase, user } = await auth();
   const { error } = await supabase.from("meetups").insert({
     ...parsed.data,
-    starts_at: localDateTimeOrFail(parsed.data.starts_at, parsed.data.timezone, "/plans"),
+    starts_at: localDateTimeOrFail(
+      parsed.data.starts_at,
+      parsed.data.timezone,
+      "/plans",
+    ),
     created_by: user.id,
   });
   if (error) fail("/plans", "The meetup couldn’t be saved.");
@@ -584,14 +660,21 @@ export async function createCapsule(form: FormData) {
   const parsed = capsuleSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) fail("/us", firstIssue(parsed.error));
   if (!isValidTimeZone(parsed.data.timezone))
-    fail("/us", "Your local timezone could not be detected. Refresh and try again.");
+    fail(
+      "/us",
+      "Your local timezone could not be detected. Refresh and try again.",
+    );
   const { supabase, user } = await auth();
   const { error } = await supabase.from("time_capsules").insert({
     nest_id: parsed.data.nest_id,
     created_by: user.id,
     title: parsed.data.title,
     encrypted_content: parsed.data.content,
-    unlock_at: localDateTimeOrFail(parsed.data.unlock_at, parsed.data.timezone, "/us"),
+    unlock_at: localDateTimeOrFail(
+      parsed.data.unlock_at,
+      parsed.data.timezone,
+      "/us",
+    ),
     target_timezone: parsed.data.timezone,
     strict_lock: true,
   });
@@ -663,10 +746,16 @@ export async function markNotificationReadInline(idValue: string): Promise<{
     .is("read_at", null)
     .select("id")
     .maybeSingle();
-  if (error) return { ok: false, message: "The notification could not be updated." };
+  if (error)
+    return { ok: false, message: "The notification could not be updated." };
   revalidatePath("/notifications");
   revalidatePath("/home");
-  return { ok: true, message: data ? "Notification marked as read." : "Notification was already read." };
+  return {
+    ok: true,
+    message: data
+      ? "Notification marked as read."
+      : "Notification was already read.",
+  };
 }
 
 export async function markAllNotificationsReadInline(): Promise<{
@@ -998,7 +1087,11 @@ export async function stopCurrentLocation(): Promise<{
 export async function syncProfileTimezone(timezone: string) {
   if (!isValidTimeZone(timezone)) return;
   const { supabase, user } = await auth();
-  await supabase.from("profiles").update({ timezone }).eq("id", user.id).neq("timezone", timezone);
+  await supabase
+    .from("profiles")
+    .update({ timezone })
+    .eq("id", user.id)
+    .neq("timezone", timezone);
   revalidatePath("/", "layout");
 }
 
@@ -1013,7 +1106,9 @@ export async function updateProfile(form: FormData) {
       .slice(0, 100) || null;
   const birthday = String(form.get("birthday") ?? "") || null;
   const genderIdentity =
-    String(form.get("gender_identity") ?? "").trim().slice(0, 60) || null;
+    String(form.get("gender_identity") ?? "")
+      .trim()
+      .slice(0, 60) || null;
   const latitudeValue = String(form.get("latitude") ?? "").trim();
   const longitudeValue = String(form.get("longitude") ?? "").trim();
   const latitude = latitudeValue ? Number(latitudeValue) : null;
